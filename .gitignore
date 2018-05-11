@@ -1,7 +1,7 @@
 
 *.o
 .DS_Store
-GammaEvents.0002_double
+Gamma*
 my_prog
 output_double
 tracked_double

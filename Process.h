@@ -9,6 +9,7 @@
 
 #include "Event.h"
 #include "Vector.h"
+#include "Path.h"
 
 struct finalevent{
     std::vector<int> order1;
@@ -44,7 +45,9 @@ private:
     double ComputeNishinaSigmaTotal(const double & E);
     double DistanceGe(const int &i, const int & j);
     double DistanceGe(const int &i);
-    double ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot);
+ //   double ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot);
+    double ComputeTotalFactor(const std::vector <int> interactionorder, std::vector <meritfactor> meritfactors, const double etot);
+
     finalevent ComputeDoubleProbability();
     finalevent ComputeSingleProbability();
     void Print(std::ostream & out, const int & a, const int & b);
@@ -68,4 +71,7 @@ private:
     std::vector<double> photosigma;
     std::vector<double> totalfactors;
 };
+
+
+
 #endif
