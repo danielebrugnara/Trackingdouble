@@ -1,0 +1,7 @@
+
+*.o
+.DS_Store
+GammaEvents.0002_double
+my_prog
+output_double
+tracked_double
