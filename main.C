@@ -41,7 +41,7 @@ int main(int argc, char ** argv ){
     Process processor;
     
     //Set here the maximum number of events read and processed from the file
-    const int MAX_EVENTS=500;
+    const int MAX_EVENTS=500000;
     int good_events=0;
     
     //Program start

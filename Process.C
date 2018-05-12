@@ -1,7 +1,6 @@
 #include "Process.h"
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Initialization procedures///////////////////////////////////////////////////////////////////////////
 Process::Process(){
     //Compute front faces here!!
     
@@ -15,6 +14,8 @@ void Process::LoadEvent(const Event & ev){
     ComputeDistances();
 }
 
+//Closing procedures/////////////////////////////////////////////////////////////////////////////////
+
 void Process::ClearAll(){
     ev.Clear();
 //    interactionorder.clear();
@@ -24,8 +25,7 @@ void Process::ClearAll(){
     totalfactors.clear();
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////
+//Merging close points//////////////////////////////////////////////////////////////////////////////////////////////
 
 void Process::MergePoints(){
     std::vector<int> number_events;
@@ -43,16 +43,38 @@ void Process::MergePoints(){
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Computing photoelectric cross sections////////////////////////////////////////////////////////////////////
+
 void Process::ComputePhotoelectricSigmas(){
     for (unsigned int i=0; i<ev.NumberofInteractionPts() ; i++){
         photosigma.push_back(ComputePhotoelectricSigma(ev.GetInteractionPt(i).GetEnergy()));
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+double Process::ComputePhotoelectricSigma(double E){     //presa da OFT!!! controllare!
+    /* sigma = 4 alpha^4*sqrt(2)*Z^5 phi_0*(E/mec2)^(-7/2),phi_0=8/3 pi r_0^2 */
+    /* sigma abs K+L = 9/8* sigma_Kshell */
+    double temp;
+    double gamma;
+    double hnu_k;
+    hnu_k = SQ(Z_ge - 0.03) * mec2 * SQ(fine_alpha) / 2;   //NO NEED TO COMPUTE THIS EVERYTIME!!!
+    gamma = CB(E / mec2) * CB(E / mec2) * E / mec2;        //AND SLSO THESE QUOTIENTS
+    gamma = sqrt(gamma);
+    //   temp = 4 * CB(fine_alpha) * fine_alpha * 1.4142 * 6.651e-25 * CB(Z_ge) * SQ(Z_ge);//AND ALSO THIS
+    temp = 4 * CB(fine_alpha) * fine_alpha * 1.4142 * 6.651e-23 * CB(Z_ge) * SQ(Z_ge);//AND ALSO THIS
+    
+    temp = sqrt(E / mec2) * temp / gamma;       /* en mm2/atom */
+    /* not well suited for energies below 20 keV
+     removed the 1.125 factor and added sqrt(E/mec2) to fit data */
+    if (E < 0.025) {
+        temp = 2.2 * pow((hnu_k / E), 2.6666) * 6.3e-18 / SQ(Z_ge);
+        if (E < 0.0111)
+            temp = temp / 8.5;
+    }
+    return temp;
+}
+
+//Computing distances/////////////////////////////////////////////////////////////////////////////////////
 void Process::ComputeDistances(){
     //initialize the distance matrix, elements on the diagonal are the distance from source
     size_t npoints=ev.NumberofInteractionPts();
@@ -75,7 +97,6 @@ void Process::ComputeDistances(){
     for (unsigned int i=0; i<npoints; i++){
         for (unsigned int j=0; j<i; j++){
             gedistancematr[i][j]=gedistancematr[j][i]=DistanceGe(i, j);
-//            std::cout<<"distanza normale: "<<distancematr[i][j]<<"         distanza germanio: "<<gedistancematr[i][j]<<"\n";
         }
     }
     for (unsigned int i=0; i<npoints; i++){
@@ -83,48 +104,19 @@ void Process::ComputeDistances(){
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-double Process::ComputePhotoelectricSigma(double E){     //presa da OFT!!! controllare!
-    /* sigma = 4 alpha^4*sqrt(2)*Z^5 phi_0*(E/mec2)^(-7/2),phi_0=8/3 pi r_0^2 */
-    /* sigma abs K+L = 9/8* sigma_Kshell */
-    double temp;
-    double gamma;
-    double hnu_k;
-    hnu_k = SQ(Z_ge - 0.03) * mec2 * SQ(fine_alpha) / 2;   //NO NEED TO COMPUTE THIS EVERYTIME!!!
-    gamma = CB(E / mec2) * CB(E / mec2) * E / mec2;        //AND SLSO THESE QUOTIENTS
-    gamma = sqrt(gamma);
-//   temp = 4 * CB(fine_alpha) * fine_alpha * 1.4142 * 6.651e-25 * CB(Z_ge) * SQ(Z_ge);//AND ALSO THIS
-    temp = 4 * CB(fine_alpha) * fine_alpha * 1.4142 * 6.651e-23 * CB(Z_ge) * SQ(Z_ge);//AND ALSO THIS
-
-    temp = sqrt(E / mec2) * temp / gamma;       /* en mm2/atom */
-    /* not well suited for energies below 20 keV
-     removed the 1.125 factor and added sqrt(E/mec2) to fit data */
-    if (E < 0.025) {
-        temp = 2.2 * pow((hnu_k / E), 2.6666) * 6.3e-18 / SQ(Z_ge);
-        if (E < 0.0111)
-            temp = temp / 8.5;
-    }
-    return temp;
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-double Process::ComputeScatteringCosAngle(const int & i, const int & j, const int & k){//maype cubic matrix?
-    Vec3 A=ev.GetInteractionPt(j).GetPosition();
-    return (A-ev.GetInteractionPt(i).GetPosition()).CosAngleBetween((ev.GetInteractionPt(k).GetPosition()-A));
-}
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Scattering angles/////////////////////////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeScatteringCosAngle(const int & j, const int & k){//maybe matrix?
     Vec3 A=ev.GetInteractionPt(j).GetPosition();
     return A.CosAngleBetween(ev.GetInteractionPt(k).GetPosition()-A);
 }
 
+double Process::ComputeScatteringCosAngle(const int & i, const int & j, const int & k){//maype cubic matrix?
+    Vec3 A=ev.GetInteractionPt(j).GetPosition();
+    return (A-ev.GetInteractionPt(i).GetPosition()).CosAngleBetween((ev.GetInteractionPt(k).GetPosition()-A));
+}
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Compton kinematic factor///////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeComptonFactor(const int & i, const int & j, const int & k, const double & E1,  const double & E2){
     double cosang=ComputeScatteringCosAngle(i, j, k);
     double Egeo=E1/(1.0+E1/mec2*(1-cosang));//sistemare
@@ -142,8 +134,7 @@ double Process::ComputeComptonFactor(const int & i, const int & j, const double 
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Compton cross section/////////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeNishinaSigma(const int & i, const int & j, const int & k, const double & E1,  const double & E2){
     return 0.5*SQ(r0)*SQ(E2/E1)*(E2/E1+E1/E2-1+SQ(ComputeScatteringCosAngle(i, j, k))); //sistemare
 }
@@ -172,6 +163,7 @@ double Process::ComputeNishinaSigma(const int & i, const int & j, const double &
     temp = temp * temp0;
     return temp*100.0;
 }*/
+
 
 double Process::ComputeNishinaSigmaTotal(const double & E){
     //http://lappweb.in2p3.fr/~maire/tutorials/compton.pdf
@@ -278,13 +270,10 @@ double Process::ComputeTotalFactor(const std::vector <int> interactionorder, std
                 ptmp*=/*NrhA*/exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
                 meritfactors[i-1].nr=interactionorder[i-1];
                 meritfactors[i-1].factor=ptmp;
-//                std::cout <<"ptmp "<<ptmp <<std::endl;
-//                std::cout <<"sigma "<<sigma*NrhA <<std::endl;
 
             }
             
         }
-//        std::cout << interactionorder[i-1];
         sigma=photosigma[interactionorder[i-1]];
         meritfactors[i-1].factor=meritfactors[i-2].factor*sigma*NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
         meritfactors[i-1].nr=interactionorder[i-1];
@@ -390,8 +379,6 @@ finalevent Process::ComputeSingleProbability(){
     }
     do{
         p=ComputeTotalFactor(interactionorder, meritfactors, etot);
-//        std::cout <<"fattore=  "<<p <<std::endl;
-
         if (p>pfinal){
             pfinal=p;
 
