@@ -218,7 +218,7 @@ double Process::DistanceGe(const int &i){
         return resolution;
     }
 }*/
-double Process::DistanceGe(const int &i){//provvisoria, non thiene conto dlela geometria
+double Process::DistanceGe(const int &i){//temporary, does not take into account the geometry
     double dist;
     dist=ev.GetInteractionPt(i).GetPosition().Norm()-rinner;
     if (dist>0){
@@ -248,7 +248,6 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
             E1=E2;
             E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
             i++;
-//            std::cout<<"salto!!\n";
         }
         for(; i<size; i++){
             if (i==1){
@@ -319,17 +318,15 @@ finalevent Process::ComputeDoubleProbability(){
         interactionorder[i]=i;
     }
     
-    
     for(unsigned int it=1; it<interactionorder.size(); it++){
         std::vector<int> part1(&interactionorder.front(), &interactionorder[it]);
         std::vector<int> part2(&interactionorder[it], &interactionorder[interactionorder.size()]);
         meritfactors1.resize(part1.size());
         meritfactors2.resize(part2.size());
-        
-        for(unsigned int i=0; i<it;i++){//controllare siano giusti it qui!!
+        etot1=etot2=0;
+        for(unsigned int i=0; i<it;i++){
             meritfactors1[i].nr=-1;
             etot1+=ev.GetInteractionPt(i).GetEnergy();
-            
         }
         for(unsigned int i=0; i<meritfactors2.size();i++){//e qui
             meritfactors2[i].nr=-1;
