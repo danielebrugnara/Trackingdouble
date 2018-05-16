@@ -1,9 +1,9 @@
 #include "Event.h"
 
 
-  //////////////////////////////////////
- //InteractionPt class implementation//
-//////////////////////////////////////
+//InteractionPt class implementation//////////////////////////////////////////////////////////////////////////////
+
+
 
 InteractionPt::InteractionPt(){
 
@@ -18,26 +18,26 @@ InteractionPt::InteractionPt(const int & segment, const double & en, const Vec3 
 
 
 
-Vec3 InteractionPt::GetPosition(){
+Vec3 InteractionPt::GetPosition()const{
 	return vec;
 }
 
-double InteractionPt::GetEnergy(){
+double InteractionPt::GetEnergy()const{
 	return en;
 }
 
 
-int InteractionPt::GetDetector(){
+int InteractionPt::GetDetector()const{
 	return detector;
 }
 
-int InteractionPt::GetSegment(){
+int InteractionPt::GetSegment()const{
     return segment;
 }
 
-  //////////////////////////////
- //Event class implementation//
-//////////////////////////////
+//Event class implementation//////////////////////////////////////////////////////////////
+
+
 Event::Event(){}
 
 Event::Event(std::string Line){
@@ -76,25 +76,24 @@ InteractionPt Event::GetInteractionPt(const int & i)const{
 	return points[i];
 }
 
-double Event::GetTotalEnergy(){
+double Event::GetTotalEnergy()const{
     double energy=0;
     for (unsigned int i=0; i<points.size(); i++){
         energy+=points[i].GetEnergy();
     }
     return energy;
 }
-
-double Event::PointsDistance(const int & i, const int & j){
+double Event::PointsDistance(const int & i, const int & j)const{
     return (points.at(i).GetPosition()-points.at(j).GetPosition()).Norm();
 }
 
 //Merge interaction points that are close together////////////////////////////////////////////////
 void Event::MergePoints(std::vector<int> interaction_numbers){
-
+    
     double etmp=points.at(interaction_numbers.at(0)).GetEnergy();
     double etot=etmp;
     Vec3 A=points.at(interaction_numbers.at(0)).GetPosition()*etmp;
-
+    
     for (unsigned int i=1; i<interaction_numbers.size(); i++){
         etmp=points.at(interaction_numbers.at(i)-i+1).GetEnergy();
         A=A+points.at(interaction_numbers.at(i)-i+1).GetPosition()*etmp;
