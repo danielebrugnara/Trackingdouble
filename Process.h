@@ -9,7 +9,6 @@
 
 #include "Event.h"
 #include "Vector.h"
-#include "Path.h"
 
 struct finalevent{
     std::vector<int> order1;
