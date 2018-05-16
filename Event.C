@@ -1,9 +1,7 @@
 #include "Event.h"
 
 
-  //////////////////////////////////////
- //InteractionPt class implementation//
-//////////////////////////////////////
+//InteractionPt class implementation//////////////////////////////////////////////////////////////////////////////
 
 InteractionPt::InteractionPt(){
 
@@ -35,9 +33,8 @@ int InteractionPt::GetSegment(){
     return segment;
 }
 
-  //////////////////////////////
- //Event class implementation//
-//////////////////////////////
+//Event class implementation/////////////////////////////////////////////////////////////
+
 Event::Event(){}
 
 Event::Event(std::string Line){
@@ -106,7 +103,7 @@ void Event::MergePoints(std::vector<int> interaction_numbers){
     points.at(interaction_numbers.at(0))=inttmp;
 }
 
-//operator overloading to input data
+//operator overloading to input data///////////////////////////////////////////////
 std::istream & operator >> (std::istream & in, InteractionPt & b){
 	in >> b.segment >> b.en >> b.vec >> b.detector;
 	return in;

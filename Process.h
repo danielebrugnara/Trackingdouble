@@ -44,9 +44,7 @@ private:
     double ComputeNishinaSigmaTotal(const double & E);
     double DistanceGe(const int &i, const int & j);
     double DistanceGe(const int &i);
- //   double ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot);
-    double ComputeTotalFactor(const std::vector <int> interactionorder, std::vector <meritfactor> meritfactors, const double etot);
-
+    double ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot);
     finalevent ComputeDoubleProbability();
     finalevent ComputeSingleProbability();
     void Print(std::ostream & out, const int & a, const int & b);
@@ -67,6 +65,7 @@ private:
     double const sigma_E=1; //2keV      Risoluzione energetica
     double const sigma_r=4; //4mm       Risoluzione posizionale
     double const pi=3.14159265359;
+    size_t nrpts;
     std::vector<double> photosigma;
     std::vector<double> totalfactors;
 };

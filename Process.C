@@ -9,9 +9,13 @@ Process::Process(){
 void Process::LoadEvent(const Event & ev){
     this->ev=ev;
     MergePoints();
+    nrpts=this->ev.NumberofInteractionPts();
+    
     //  SmearPoints();
     ComputePhotoelectricSigmas();
-    ComputeDistances();
+    if (nrpts!=1){
+        ComputeDistances();
+    }
 }
 
 //Closing procedures/////////////////////////////////////////////////////////////////////////////////
@@ -29,9 +33,9 @@ void Process::ClearAll(){
 
 void Process::MergePoints(){
     std::vector<int> number_events;
-    for (unsigned int i=0; i<ev.NumberofInteractionPts(); i++){
+    for (unsigned int i=0; i<ev.NumberofInteractionPts(); i++){//do not use nrpts
         number_events.push_back(i);
-        for (unsigned int j=i+1; j<ev.NumberofInteractionPts();j++){
+        for (unsigned int j=i+1; j<ev.NumberofInteractionPts();j++){//do not use nrpts
             if (ev.PointsDistance(i, j)<4){
                 number_events.push_back(j);
             }
@@ -46,7 +50,7 @@ void Process::MergePoints(){
 //Computing photoelectric cross sections////////////////////////////////////////////////////////////////////
 
 void Process::ComputePhotoelectricSigmas(){
-    for (unsigned int i=0; i<ev.NumberofInteractionPts() ; i++){
+    for (unsigned int i=0; i<nrpts ; i++){
         photosigma.push_back(ComputePhotoelectricSigma(ev.GetInteractionPt(i).GetEnergy()));
     }
 }
@@ -77,34 +81,33 @@ double Process::ComputePhotoelectricSigma(double E){     //presa da OFT!!! contr
 //Computing distances/////////////////////////////////////////////////////////////////////////////////////
 void Process::ComputeDistances(){
     //initialize the distance matrix, elements on the diagonal are the distance from source
-    size_t npoints=ev.NumberofInteractionPts();
-    distancematr.resize(npoints);
-    gedistancematr.resize(npoints);
+    distancematr.resize(nrpts);
+    gedistancematr.resize(nrpts);
 
-    for (unsigned int i=0; i<npoints; i++){
-        distancematr.at(i).resize(npoints);
-        gedistancematr.at(i).resize(npoints);
+    for (unsigned int i=0; i<nrpts; i++){
+        distancematr.at(i).resize(nrpts);
+        gedistancematr.at(i).resize(nrpts);
         for (unsigned int j=0; j<i; j++){
             distancematr[i][j]=distancematr[j][i]=ev.PointsDistance(i, j);
         }
     }
     
-    for (unsigned int i=0; i<npoints; i++){
+    for (unsigned int i=0; i<nrpts; i++){
         distancematr[i][i]=ev.GetInteractionPt(i).GetPosition().Norm();
     }
     
     //call to compute the distance in germanium
-    for (unsigned int i=0; i<npoints; i++){
+    for (unsigned int i=0; i<nrpts; i++){
         for (unsigned int j=0; j<i; j++){
             gedistancematr[i][j]=gedistancematr[j][i]=DistanceGe(i, j);
         }
     }
-    for (unsigned int i=0; i<npoints; i++){
+    for (unsigned int i=0; i<nrpts; i++){
         gedistancematr[i][i]=DistanceGe(i);
     }
 }
 
-//Scattering angles/////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Scattering angles///////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeScatteringCosAngle(const int & j, const int & k){//maybe matrix?
     Vec3 A=ev.GetInteractionPt(j).GetPosition();
     return A.CosAngleBetween(ev.GetInteractionPt(k).GetPosition()-A);
@@ -120,21 +123,21 @@ double Process::ComputeScatteringCosAngle(const int & i, const int & j, const in
 double Process::ComputeComptonFactor(const int & i, const int & j, const int & k, const double & E1,  const double & E2){
     double cosang=ComputeScatteringCosAngle(i, j, k);
     double Egeo=E1/(1.0+E1/mec2*(1-cosang));//sistemare
-    double err2=SQ(sigma_E)*SQ(Egeo/E1*(1+Egeo*(1-cosang)/mec2))+SQ(sigma_r)*SQ(SQ(E1)/(mec2+SQ(E1)*(1-cosang))*1/(distancematr[i][j]*distancematr[j][k])); //rough approximation, not even sure acout d(cos)/dr
+    double err2=SQ(sigma_E)*SQ(Egeo/E1*(1+Egeo*(1-cosang)/mec2))+SQ(mec2*SQ(E2)/SQ(mec2+E2*(1-cosang)))*SQ(2*resolution)/(SQ(distancematr[j][k])+SQ(resolution)); //rough approximation, not even sure acout d(cos)/dr
     return exp(-SQ(E2-Egeo)/err2);
 }
 
 double Process::ComputeComptonFactor(const int & i, const int & j, const double & E1,  const double & E2){
     double cosang=ComputeScatteringCosAngle(i, j);
     double Egeo=E1/(1.0+E1/mec2*(1.0-cosang));//sistemare
-//    double err2=SQ(sigma_E)*SQ(Egeo/E1*(1+Egeo*(1-cosang)/mec2))+SQ(sigma_r)*SQ(SQ(E1)/(mec2+SQ(E1)*(1-cosang))*1/(distancematr[i][i]*distancematr[i][j])); //rough approximation, not even sure acout d(cos)/dr
-    double err2=2;
+    double err2=SQ(sigma_E)*SQ(Egeo/E1*(1+Egeo*(1-cosang)/mec2))+SQ(mec2*SQ(E2)/SQ(mec2+E2*(1-cosang)))*SQ(2*resolution)/(SQ(distancematr[i][j])+SQ(resolution));
     double answer=exp(-SQ(E2-Egeo)/err2);
-    return answer;
+    
+    return answer; //tialiere questo step
 }
 
 
-//Compton cross section/////////////////////////////////////////////////////////////////////////////////////////
+//Compton cross section////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeNishinaSigma(const int & i, const int & j, const int & k, const double & E1,  const double & E2){
     return 0.5*SQ(r0)*SQ(E2/E1)*(E2/E1+E1/E2-1+SQ(ComputeScatteringCosAngle(i, j, k))); //sistemare
 }
@@ -143,8 +146,7 @@ double Process::ComputeNishinaSigma(const int & i, const int & j, const double &
     return 0.5*SQ(r0)*SQ(E2/E1)*(E2/E1+E1/E2-1+SQ(ComputeScatteringCosAngle(i, j))); //sistemare
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Nishina cross section//////////////////////////////////////////////////////////////////////////////////////
 /*double Process::ComputeNishinaSigmaTotal(const double & E){//controllare!!!!!!
     double temp;
     double temp0;
@@ -172,8 +174,7 @@ double Process::ComputeNishinaSigmaTotal(const double & E){
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Germanium distances/////////////////////////////////////////////////////////////////////////////
 double Process::DistanceGe(const int &i, const int & j){
     Vec3 A, B;
     double a, b;
@@ -195,7 +196,6 @@ double Process::DistanceGe(const int &i, const int & j){
         if (rcenter>=rinner){
             return distancematr[i][j];
         }else{
-//            std::cout <<"distanza in germanio diversa da distanza normale**********************************\n";
             double rvacuum=sqrt(SQ(rinner)-SQ(rcenter));
             rvacuum=distancematr[i][j]-2*rvacuum;
             if (rvacuum>0){
@@ -207,7 +207,7 @@ double Process::DistanceGe(const int &i, const int & j){
     }
 }
 
-//Actual distance in ge keeping in mind the geometry!!
+//Actual distance in ge keeping in mind the geometry////////////////////////////////////////////////////////
 /*
 double Process::DistanceGe(const int &i){
     double dist;
@@ -229,12 +229,9 @@ double Process::DistanceGe(const int &i){//provvisoria, non thiene conto dlela g
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-//double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot){
-double Process::ComputeTotalFactor(const std::vector <int> interactionorder, std::vector <meritfactor> meritfactors, const double etot){  //passato per value per poterlo vedere nel debugger, cambiare poi
+//Total merit factor//////////////////////////////////////////////////////////////////////////////////////
+double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot){
     long double ptmp=-1;
-    long double ptmp2=-1;
 
     size_t size=interactionorder.size();
     double E1=etot;
@@ -251,23 +248,25 @@ double Process::ComputeTotalFactor(const std::vector <int> interactionorder, std
             E1=E2;
             E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
             i++;
+//            std::cout<<"salto!!\n";
         }
         for(; i<size; i++){
             if (i==1){
                 sigma=ComputeNishinaSigmaTotal(E1);
-                ptmp=/*NrhA*/exp(-sigma*NrhA*gedistancematr[interactionorder[i-1]][interactionorder[i-1]]);
-//                ptmp*=*ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], E1, E2);
-                ptmp2=ComputeComptonFactor(interactionorder[i-1], interactionorder[i], E1, E2);
+                ptmp=NrhA*exp(-sigma*NrhA*gedistancematr[interactionorder[i-1]][interactionorder[i-1]]);
+                ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], E1, E2);
+                ptmp*=ComputeComptonFactor(interactionorder[i-1], interactionorder[i], E1, E2);
                 meritfactors[i-1].factor=ptmp;
                 meritfactors[i-1].nr=interactionorder[i-1];
             }else{
                 E1=E2;
+//                std::cout<<i<<"\n";
                 E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
                 ptmp=meritfactors[i-2].factor;
                 sigma=ComputeNishinaSigmaTotal(E1);
                 ptmp*=ComputeComptonFactor(interactionorder[i-2], interactionorder[i-1], interactionorder[i], E1, E2);
-//                ptmp*=ComputeNishinaSigma(interactionorder[i-2], interactionorder[i-1], interactionorder[i], E1, E2);
-                ptmp*=/*NrhA*/exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
+                ptmp*=ComputeNishinaSigma(interactionorder[i-2], interactionorder[i-1], interactionorder[i], E1, E2);
+                ptmp*=NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
                 meritfactors[i-1].nr=interactionorder[i-1];
                 meritfactors[i-1].factor=ptmp;
 
@@ -305,10 +304,8 @@ double Process::ComputeTotalFactor(const std::vector <int> interactionorder, std
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///Computes all permutations of the fragmented event////
-////////////////////////////////////////////////////////
+//Computes all permutations of the fragmented event//////////////////////////////////////////////////////////
+
 finalevent Process::ComputeDoubleProbability(){
     std::vector <int> interactionorder;
     double p1=0, p2=0;
@@ -317,9 +314,8 @@ finalevent Process::ComputeDoubleProbability(){
     finalevent final;
     std::vector<meritfactor> meritfactors1;
     std::vector<meritfactor> meritfactors2;
-    size_t npoints=ev.NumberofInteractionPts();
-    interactionorder.resize(npoints);
-    for (unsigned int i=0; i<npoints; i++){
+    interactionorder.resize(nrpts);
+    for (unsigned int i=0; i<nrpts; i++){
         interactionorder[i]=i;
     }
     
@@ -357,10 +353,9 @@ finalevent Process::ComputeDoubleProbability(){
     return final;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///Computes all permutations of the entire event////
-////////////////////////////////////////////////////
+
+//Computes all permutations of the entire event////////////////////////////////////////////////////////
+
 finalevent Process::ComputeSingleProbability(){
     std::vector <int> interactionorder;
     double p=0;
@@ -369,12 +364,13 @@ finalevent Process::ComputeSingleProbability(){
     finalevent final;
     final.order2.push_back(0);
     std::vector<meritfactor> meritfactors;
-    size_t npoints=ev.NumberofInteractionPts();
-    meritfactors.resize(npoints);
-    interactionorder.resize(npoints);
+ 
+    meritfactors.resize(nrpts);
+    interactionorder.resize(nrpts);
 
-    for (unsigned int i=0; i<npoints; i++){
-        meritfactors[i].nr=-1;
+    for (unsigned int i=0; i<nrpts; i++){
+
+        meritfactors[i].nr=-2;
         interactionorder[i]=i;
     }
     do{
@@ -390,18 +386,19 @@ finalevent Process::ComputeSingleProbability(){
 }
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Evaluation of the event/////////////////////////////////////////////////////////////////////////////////////
 void Process::EvaluateEvent(std::ostream & out){
     std::cout <<"Calcolo singola" <<std::endl;
     finalevent psingle=ComputeSingleProbability();
+    std::cout<<psingle.factor<<"\n";
     std::cout <<"Calcolo doppia" <<std::endl;
-
-    finalevent pdouble=ComputeDoubleProbability();
-    double factor= (pdouble.factor-psingle.factor)/psingle.factor;
-    if (factor>treashold||1){
-        Print(out, pdouble.order1[0], pdouble.order2[0]);
+    if (nrpts>1){
+        finalevent pdouble=ComputeDoubleProbability();
         
+        double factor= (pdouble.factor-psingle.factor)/psingle.factor;
+        if (factor>treashold||1){
+//            Print(out, pdouble.order1[0], pdouble.order2[0]);
+        }
     }
 }
 

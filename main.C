@@ -24,7 +24,7 @@ enum LineType Classify(std::string Line);
 int main(int argc, char ** argv ){
     
     //External Files
-    std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0002_double";
+    std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0002_prova";
     std::string out_file_name="tracked_double";
     std::ifstream infile(in_file_name);
     if (!infile.is_open()) std::cout<<"Could not ope the file" << std::endl;
@@ -58,13 +58,13 @@ int main(int argc, char ** argv ){
             continue;
         }
         switch (Classify(Line)){
-            case EVENT_START: {//new Event
+            case EVENT_START: {//new Event (if there are  newlines the program registers more events than it should be)
                 event_tmp.SetEventNumber(events_number);
                 events_number++;
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's process this event!
                     std::cout <<"analizzo un buon evento, nr. " <<events_number <<std::endl;
                     good_events++;
-                    event_tmp=event_tmp;
+//                    event_tmp=event_tmp;
                     processor.ClearAll();
                     processor.LoadEvent(event_tmp);
                     processor.EvaluateEvent(out);
