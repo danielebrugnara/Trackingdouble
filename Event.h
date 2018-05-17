@@ -8,6 +8,7 @@ class InteractionPt{
         InteractionPt();
 		InteractionPt(const int & segment, const double & en, const Vec3 & vec,  const int & detector);
 		Vec3 GetPosition();
+        Vec3 GetDirection();
 		double GetEnergy();
 		int GetDetector();
         int GetSegment();

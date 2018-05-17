@@ -18,18 +18,24 @@ void Process::LoadEvent(const Event & ev){
     }
 }
 
+//Add original event to confront//////////////////////////////////////////////////////////////////////
+
+void Process::AddOriginal(const Event & ev_orig){
+    this->ev_orig=ev_orig;
+}
+
 //Closing procedures/////////////////////////////////////////////////////////////////////////////////
 
 void Process::ClearAll(){
     ev.Clear();
-//    interactionorder.clear();
+    //    interactionorder.clear();
     distancematr.clear();
     gedistancematr.clear();
     photosigma.clear();
     totalfactors.clear();
 }
 
-//Merging close points//////////////////////////////////////////////////////////////////////////////////////////////
+//Merging close points/////////////////////////////////////////////////////////////////////////////////
 
 void Process::MergePoints(){
     std::vector<int> number_events;
@@ -47,7 +53,7 @@ void Process::MergePoints(){
     }
 }
 
-//Computing photoelectric cross sections////////////////////////////////////////////////////////////////////
+//Computing photoelectric cross sections//////////////////////////////////////////////////////////////
 
 void Process::ComputePhotoelectricSigmas(){
     for (unsigned int i=0; i<nrpts ; i++){
@@ -83,7 +89,7 @@ void Process::ComputeDistances(){
     //initialize the distance matrix, elements on the diagonal are the distance from source
     distancematr.resize(nrpts);
     gedistancematr.resize(nrpts);
-
+    
     for (unsigned int i=0; i<nrpts; i++){
         distancematr.at(i).resize(nrpts);
         gedistancematr.at(i).resize(nrpts);
@@ -107,7 +113,7 @@ void Process::ComputeDistances(){
     }
 }
 
-//Scattering angles///////////////////////////////////////////////////////////////////////////////////////
+//Scattering angles//////////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeScatteringCosAngle(const int & j, const int & k){//maybe matrix?
     Vec3 A=ev.GetInteractionPt(j).GetPosition();
     return A.CosAngleBetween(ev.GetInteractionPt(k).GetPosition()-A);
@@ -119,7 +125,7 @@ double Process::ComputeScatteringCosAngle(const int & i, const int & j, const in
 }
 
 
-//Compton kinematic factor///////////////////////////////////////////////////////////////////////////////////////
+//Compton kinematic factor////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeComptonFactor(const int & i, const int & j, const int & k, const double & E1,  const double & E2){
     double cosang=ComputeScatteringCosAngle(i, j, k);
     double Egeo=E1/(1.0+E1/mec2*(1-cosang));//sistemare
@@ -146,25 +152,25 @@ double Process::ComputeNishinaSigma(const int & i, const int & j, const double &
     return 0.5*SQ(r0)*SQ(E2/E1)*(E2/E1+E1/E2-1+SQ(ComputeScatteringCosAngle(i, j))); //sistemare
 }
 
-//Nishina cross section//////////////////////////////////////////////////////////////////////////////////////
+//Nishina cross section//////////////////////////////////////////////////////////////////////////////////
 /*double Process::ComputeNishinaSigmaTotal(const double & E){//controllare!!!!!!
-    double temp;
-    double temp0;
-    double temp1;
-    double temp2;
-    double temp3;
-    double gamma;
-    gamma = E / mec2;
-    
-    temp0 = 1e4 * 2 * 3.1415 * SQ(r0) * Z_ge;  // in cm2/atom
-    temp1 = 1 + gamma;
-    temp2 = 1 + (2 * gamma);
-    temp3 = 1 + (3 * gamma);
-    temp = (temp1 / SQ(gamma)) * (((2 * temp1) / temp2) - (log(temp2) / gamma));
-    temp = temp + (log(temp2) / (2 * gamma) - (temp3 / SQ(temp2)));
-    temp = temp * temp0;
-    return temp*100.0;
-}*/
+ double temp;
+ double temp0;
+ double temp1;
+ double temp2;
+ double temp3;
+ double gamma;
+ gamma = E / mec2;
+ 
+ temp0 = 1e4 * 2 * 3.1415 * SQ(r0) * Z_ge;  // in cm2/atom
+ temp1 = 1 + gamma;
+ temp2 = 1 + (2 * gamma);
+ temp3 = 1 + (3 * gamma);
+ temp = (temp1 / SQ(gamma)) * (((2 * temp1) / temp2) - (log(temp2) / gamma));
+ temp = temp + (log(temp2) / (2 * gamma) - (temp3 / SQ(temp2)));
+ temp = temp * temp0;
+ return temp*100.0;
+ }*/
 
 
 double Process::ComputeNishinaSigmaTotal(const double & E){
@@ -174,7 +180,7 @@ double Process::ComputeNishinaSigmaTotal(const double & E){
 }
 
 
-//Germanium distances/////////////////////////////////////////////////////////////////////////////
+//Germanium distances///////////////////////////////////////////////////////////////////////////////////
 double Process::DistanceGe(const int &i, const int & j){
     Vec3 A, B;
     double a, b;
@@ -207,17 +213,17 @@ double Process::DistanceGe(const int &i, const int & j){
     }
 }
 
-//Actual distance in ge keeping in mind the geometry////////////////////////////////////////////////////////
+//Actual distance in ge keeping in mind the geometry//////////////////////////////////////////////////////
 /*
-double Process::DistanceGe(const int &i){
-    double dist;
-    dist=ev.GetInteractionPt(i).GetPosition().Norm()*(1-SQ(rinner)/(frontfaces[ev.GetInteractionPt(i).GetDetector()]*ev.GetInteractionPt(i).GetPosition()));
-    if (dist>0){
-        return dist;
-    }else{
-        return resolution;
-    }
-}*/
+ double Process::DistanceGe(const int &i){
+ double dist;
+ dist=ev.GetInteractionPt(i).GetPosition().Norm()*(1-SQ(rinner)/(frontfaces[ev.GetInteractionPt(i).GetDetector()]*ev.GetInteractionPt(i).GetPosition()));
+ if (dist>0){
+ return dist;
+ }else{
+ return resolution;
+ }
+ }*/
 double Process::DistanceGe(const int &i){//temporary, does not take into account the geometry
     double dist;
     dist=ev.GetInteractionPt(i).GetPosition().Norm()-rinner;
@@ -232,7 +238,7 @@ double Process::DistanceGe(const int &i){//temporary, does not take into account
 //Total merit factor//////////////////////////////////////////////////////////////////////////////////////
 double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot){
     long double ptmp=-1;
-
+    
     size_t size=interactionorder.size();
     double E1=etot;
     double E2=E1-ev.GetInteractionPt(interactionorder[0]).GetEnergy();
@@ -259,7 +265,7 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
                 meritfactors[i-1].nr=interactionorder[i-1];
             }else{
                 E1=E2;
-//                std::cout<<i<<"\n";
+                //                std::cout<<i<<"\n";
                 E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
                 ptmp=meritfactors[i-2].factor;
                 sigma=ComputeNishinaSigmaTotal(E1);
@@ -268,7 +274,7 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
                 ptmp*=NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
                 meritfactors[i-1].nr=interactionorder[i-1];
                 meritfactors[i-1].factor=ptmp;
-
+                
             }
             
         }
@@ -277,28 +283,28 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
         meritfactors[i-1].nr=interactionorder[i-1];
         return meritfactors[i-1].factor;
         /*
-        
-        for (i--;i<size-1; i++){
-            if (i<1){
-                E1=etot;
-                E2=E1-ev.GetInteractionPt(interactionorder[0]).GetEnergy();
-                sigma=ComputeNishinaSigmaTotal(E1);
-                meritfactors[0].factor=exp(-sigma*NrhA*gedistancematr[interactionorder[0]][interactionorder[0]]);
-                meritfactors[0].nr=interactionorder[0];
-            }else{
-                ptmp=meritfactors[i-1].factor;
-                E1=E2;
-                E2=E1-ev.GetInteractionPt(interactionorder[i]).GetEnergy();
-                ptmp*=ComputeComptonFactor(interactionorder[i-1], interactionorder[i], interactionorder[i+1], E1, E2);
-                ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], interactionorder[i+1], E1, E2);
-                ptmp*=NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-1]][interactionorder[i]]);
-                meritfactors[i].nr=interactionorder[i];
-                meritfactors[i].factor=ptmp;
-            }
-        }
-        meritfactors[i].factor=meritfactors[i-1].factor*gedistancematr[interactionorder[i-1]][interactionorder[i]]*photosigma[interactionorder[i]];
-        meritfactors[i].nr=interactionorder[i];
-        return meritfactors[i].factor;
+         
+         for (i--;i<size-1; i++){
+         if (i<1){
+         E1=etot;
+         E2=E1-ev.GetInteractionPt(interactionorder[0]).GetEnergy();
+         sigma=ComputeNishinaSigmaTotal(E1);
+         meritfactors[0].factor=exp(-sigma*NrhA*gedistancematr[interactionorder[0]][interactionorder[0]]);
+         meritfactors[0].nr=interactionorder[0];
+         }else{
+         ptmp=meritfactors[i-1].factor;
+         E1=E2;
+         E2=E1-ev.GetInteractionPt(interactionorder[i]).GetEnergy();
+         ptmp*=ComputeComptonFactor(interactionorder[i-1], interactionorder[i], interactionorder[i+1], E1, E2);
+         ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], interactionorder[i+1], E1, E2);
+         ptmp*=NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-1]][interactionorder[i]]);
+         meritfactors[i].nr=interactionorder[i];
+         meritfactors[i].factor=ptmp;
+         }
+         }
+         meritfactors[i].factor=meritfactors[i-1].factor*gedistancematr[interactionorder[i-1]][interactionorder[i]]*photosigma[interactionorder[i]];
+         meritfactors[i].nr=interactionorder[i];
+         return meritfactors[i].factor;
          */
     }
 }
@@ -351,7 +357,7 @@ finalevent Process::ComputeDoubleProbability(){
 }
 
 
-//Computes all permutations of the entire event////////////////////////////////////////////////////////
+//Computes all permutations of the entire event///////////////////////////////////////////////////////////
 
 finalevent Process::ComputeSingleProbability(){
     std::vector <int> interactionorder;
@@ -361,12 +367,12 @@ finalevent Process::ComputeSingleProbability(){
     finalevent final;
     final.order2.push_back(0);
     std::vector<meritfactor> meritfactors;
- 
+    
     meritfactors.resize(nrpts);
     interactionorder.resize(nrpts);
-
+    
     for (unsigned int i=0; i<nrpts; i++){
-
+        
         meritfactors[i].nr=-2;
         interactionorder[i]=i;
     }
@@ -374,7 +380,7 @@ finalevent Process::ComputeSingleProbability(){
         p=ComputeTotalFactor(interactionorder, meritfactors, etot);
         if (p>pfinal){
             pfinal=p;
-
+            
             final.factor=pfinal;
             final.order1=interactionorder;
         }
@@ -385,17 +391,24 @@ finalevent Process::ComputeSingleProbability(){
 
 //Evaluation of the event/////////////////////////////////////////////////////////////////////////////////////
 void Process::EvaluateEvent(std::ostream & out){
-    std::cout <<"Calcolo singola" <<std::endl;
+    double good1, good2;
+    std::cout <<"Computing single probability" <<std::endl;
     finalevent psingle=ComputeSingleProbability();
     std::cout<<psingle.factor<<"\n";
-    std::cout <<"Calcolo doppia" <<std::endl;
+    std::cout <<"Computing double probability" <<std::endl;
     if (nrpts>1){
         finalevent pdouble=ComputeDoubleProbability();
-        
-        double factor= (pdouble.factor-psingle.factor)/psingle.factor;
-        if (factor>treashold||1){
-//            Print(out, pdouble.order1[0], pdouble.order2[0]);
+        std::cout<<pdouble.factor<<"\n";
+        good1=(ev.GetInteractionPt(pdouble.order1[0]).GetDirection()-ev_orig.GetInteractionPt(0).GetDirection()).Norm();
+        good2=(ev.GetInteractionPt(pdouble.order2[0]).GetDirection()-ev_orig.GetInteractionPt(1).GetDirection()).Norm();
+        std::cout<<good1<<"        "<<good2 <<"\n";
+        if (good1>0.05||good2>0.05){
+            std::cout<<"This event has more than 0.10 difference!!!!";
         }
+        //       double factor= (pdouble.factor-psingle.factor)/psingle.factor;
+        //        if (factor>treashold||1){
+        //            Print(out, pdouble.order1[0], pdouble.order2[0]);//
+        //        }
     }
 }
 

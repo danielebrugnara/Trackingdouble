@@ -21,6 +21,7 @@ public:
     Process();
     void LoadEvent(const Event & ev);
     void EvaluateEvent(std::ostream & out);
+    void AddOriginal(const Event & ev_orig);
     void ClearAll();
     
 private:
@@ -51,6 +52,7 @@ private:
     
     //objects//////////////////////////////////////////
     Event ev;
+    Event ev_orig;
     std::vector<std::vector <double> > distancematr;
     std::vector<std::vector <double> > gedistancematr;
     std::vector<Vec3> frontfaces;

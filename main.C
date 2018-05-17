@@ -24,7 +24,7 @@ enum LineType Classify(std::string Line);
 int main(int argc, char ** argv ){
     
     //External Files
-    std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0002_prova";
+    std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0002_double";
     std::string out_file_name="tracked_double";
     std::ifstream infile(in_file_name);
     if (!infile.is_open()) std::cout<<"Could not ope the file" << std::endl;
@@ -33,9 +33,10 @@ int main(int argc, char ** argv ){
     //Vectors and points to read from the file
     Vec3 vec_tmp(0, 0, 0);
     InteractionPt point_tmp;
+    InteractionPt point_orig;
     
     //Class that describes the single event
-    Event event_tmp;
+    Event event_tmp, event_orig;
 
     //Class to process the single event
     Process processor;
@@ -45,8 +46,8 @@ int main(int argc, char ** argv ){
     int good_events=0;
     
     //Program start
-    std::cout <<"****************************** program started  ************************************"<<std::endl;
-    int events_number=0;
+    std::cout <<"****************************** program started ************************************"<<std::endl;
+    int events_number=-1;
     bool skip=true;
     
     //Loop on file lines
@@ -60,16 +61,18 @@ int main(int argc, char ** argv ){
         switch (Classify(Line)){
             case EVENT_START: {//new Event (if there are  newlines the program registers more events than it should be)
                 event_tmp.SetEventNumber(events_number);
+                event_orig.SetEventNumber(events_number);
                 events_number++;
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's process this event!
-                    std::cout <<"analizzo un buon evento, nr. " <<events_number <<std::endl;
+                    std::cout <<"Analyzing a good event, nr. " <<events_number <<std::endl;
                     good_events++;
-//                    event_tmp=event_tmp;
                     processor.ClearAll();
                     processor.LoadEvent(event_tmp);
+                    processor.AddOriginal(event_orig);
                     processor.EvaluateEvent(out);
                 }
                 event_tmp.Clear();
+                event_orig.Clear();
                 break;
             }
             case BLANK_EVENT:{//throw Away
@@ -82,6 +85,8 @@ int main(int argc, char ** argv ){
             }
                 
             case ORIGINAL_EVENT:{//might be recorded to confront tracked with original
+                std::stringstream(Line)>> point_orig;
+                event_orig.AddInteractionPt(point_orig);
                 break;
             }
             default:{//Just in case

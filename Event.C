@@ -20,6 +20,11 @@ Vec3 InteractionPt::GetPosition(){
 	return vec;
 }
 
+Vec3 InteractionPt::GetDirection(){
+    return vec*(1/vec.Norm());
+}
+
+
 double InteractionPt::GetEnergy(){
 	return en;
 }
