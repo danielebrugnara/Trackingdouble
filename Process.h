@@ -31,8 +31,8 @@ private:
         double factor;
     };
     
-    void MergePoints();
     //methods//////////////////////////////////////////
+    void MergePoints();
     void ComputeDistances();
     double ComputePhotoelectricSigma(double E);
     void ComputePhotoelectricSigmas();

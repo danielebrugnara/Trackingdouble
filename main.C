@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+//#include <omp.h>
 
 //Vector calculations class
 #include "Vector.h"
@@ -11,6 +12,7 @@
 //Processing event class
 #include "Process.h"
 
+//Classification of the line///////////////////////////////////////////////////////////////////////////////////////
 enum LineType {
     BLANK_EVENT,
     SCATTERING_EVENT,
@@ -19,10 +21,30 @@ enum LineType {
     HEADER_END
 };
 
+//Timer to beanchmark the code/////////////////////////////////////////////////////////////////////////////////////
+class Timer {
+private:
+    unsigned long begTime;
+public:
+    void Start() {
+        begTime = clock();
+    }
+    unsigned long ElapsedTime() {
+        return ((unsigned long) clock() - begTime) / CLOCKS_PER_SEC;
+    }
+    bool IsTimeout(unsigned long seconds) {
+        return seconds >= ElapsedTime();
+    }
+};
+
 enum LineType Classify(std::string Line);
 
+//MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char ** argv ){
     
+    Timer timer;
+    
+    timer.Start();
     //External Files
     std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0002_double";
     std::string out_file_name="tracked_double";
@@ -101,9 +123,12 @@ int main(int argc, char ** argv ){
     std::cout <<"Output file name: "<<out_file_name <<std::endl;
     std::cout <<"Good events: "<<good_events <<std::endl;
     std::cout <<"Total efficiency "<<(good_events*1.0)/(events_number*1.0)*100<<"%" <<std::endl;
+    std::cout <<"Computing time "<< timer.ElapsedTime() <<  " seconds " << std::endl;
     std::cout <<"****************************** program ended  ************************************"<<std::endl;
     return 0;
 }
+
+
 
 enum LineType Classify(std::string Line){
     if(!Line.compare(0, 4, "-100"))

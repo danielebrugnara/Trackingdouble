@@ -309,7 +309,7 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
     }
 }
 
-//Computes all permutations of the fragmented event//////////////////////////////////////////////////////////
+//Computes all permutations of the fragmented event////////////////////////////////////////////////////
 
 finalevent Process::ComputeDoubleProbability(){
     std::vector <int> interactionorder;
@@ -344,7 +344,7 @@ finalevent Process::ComputeDoubleProbability(){
             do{
                 p2=ComputeTotalFactor(part2, meritfactors2, etot2);
                 ptmp=p1*p2;
-                if (ptmp>ptotal){
+                if (ptmp>ptotal || ptotal==0){
                     ptotal=ptmp;
                     final.factor=ptotal;
                     final.order1=part1;
@@ -372,7 +372,6 @@ finalevent Process::ComputeSingleProbability(){
     interactionorder.resize(nrpts);
     
     for (unsigned int i=0; i<nrpts; i++){
-        
         meritfactors[i].nr=-2;
         interactionorder[i]=i;
     }
@@ -401,9 +400,9 @@ void Process::EvaluateEvent(std::ostream & out){
         std::cout<<pdouble.factor<<"\n";
         good1=(ev.GetInteractionPt(pdouble.order1[0]).GetDirection()-ev_orig.GetInteractionPt(0).GetDirection()).Norm();
         good2=(ev.GetInteractionPt(pdouble.order2[0]).GetDirection()-ev_orig.GetInteractionPt(1).GetDirection()).Norm();
-        std::cout<<good1<<"        "<<good2 <<"\n";
-        if (good1>0.05||good2>0.05){
-            std::cout<<"This event has more than 0.10 difference!!!!";
+        std::cout<<"Percentage difference from original directions"<<good1<<"        "<<good2 <<"\n";
+        if (good1>0.05||good2>0.10){
+            std::cout<<"This event has more than 0.10 difference!!!!\n";
         }
         //       double factor= (pdouble.factor-psingle.factor)/psingle.factor;
         //        if (factor>treashold||1){
