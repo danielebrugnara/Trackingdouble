@@ -46,10 +46,10 @@ int main(int argc, char ** argv ){
     
     timer.Start();
     //External Files
-    std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0001_single";
+    std::string Line, in_file_name="./GammaEvents.0002_double";
     std::string out_file_name="tracked_double";
     std::ifstream infile(in_file_name);
-    if (!infile.is_open()) std::cout<<"Could not ope the file" << std::endl;
+    if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
     std::ofstream out(out_file_name);
     
     //Vectors and points to read from the file

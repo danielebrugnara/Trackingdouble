@@ -13,8 +13,8 @@ enum LineType Classify(std::string Line);
 int main(int argc, char ** argv ){
 	int MAX_EVENTS=1000000;
 	int events_number=0;
-	std::string Line, in_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0001_single_unformatted";
-	std::string out_file_name="/Users/daniele/MY_PROGAMS/Trackingdouble/Trackingdouble/GammaEvents.0001_single";
+	std::string Line, in_file_name="../GammaEvents.0001";
+	std::string out_file_name="../GammaEvents.0001_single";
 	std::ifstream infile(in_file_name);
 	if (!infile.is_open()) std::cout<<"Could not ope the file" << std::endl;
 	std::ofstream out(out_file_name);
