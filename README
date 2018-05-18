@@ -1,2 +1,3 @@
 This program is meant to track data simulated with the Agata simulation package in the specific case of double gammas from 137Cs.
 
+If you want to add the multithread feature on mac with openMP follow these instructions http://antonmenshov.com/2017/09/09/clang-openmp-setup-in-xcode/

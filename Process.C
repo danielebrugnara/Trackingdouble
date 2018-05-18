@@ -400,7 +400,7 @@ void Process::EvaluateEvent(std::ostream & out){
         std::cout<<pdouble.factor<<"\n";
         good1=(ev.GetInteractionPt(pdouble.order1[0]).GetDirection()-ev_orig.GetInteractionPt(0).GetDirection()).Norm();
         good2=(ev.GetInteractionPt(pdouble.order2[0]).GetDirection()-ev_orig.GetInteractionPt(1).GetDirection()).Norm();
-        std::cout<<"Percentage difference from original directions"<<good1<<"        "<<good2 <<"\n";
+        std::cout<<"Percentage difference from original directions: "<<good1<<"        "<<good2 <<"\n";
         if (good1>0.05||good2>0.10){
             std::cout<<"This event has more than 0.10 difference!!!!\n";
         }
