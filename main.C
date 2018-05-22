@@ -39,16 +39,25 @@ public:
 enum LineType Classify(std::string Line);
 
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
-int main(int argc, char ** argv ){
-    
+int main(int argc, char * argv[] ){
+	    
     Timer timer;
     
     timer.Start();
     //External Files
-    std::string Line, in_file_name="./Events/GammaEvents.0001_single";
-    std::string out_file_name="./Tracked/tracked_double";
+    std::string Line; 
+    std::string in_file_name;     //="./Events/GammaEvents.0001_singlenononono";
+    std::string out_file_name;    //="./Tracked/tracked_doublenononono";
+    if (argc==3){
+    	in_file_name=argv[1];
+	out_file_name=argv[2];
+    }
+    if (argc!=3){
+	    std::cout<<"Reqiuired input and out files!";
+    }
     std::ifstream infile(in_file_name);
     if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
+
     std::ofstream out(out_file_name);
     
     //Vectors and points to read from the file
@@ -67,7 +76,8 @@ int main(int argc, char ** argv ){
     int good_events=0;
     
     //Program start
-    std::cout <<"****************************** program started ************************************"<<std::endl;
+    std::cout <<"############################################################"<<std::endl;
+    std::cout <<"**************** program started ***************************"<<std::endl;
     int events_number=-1;
     bool skip=true;
     
@@ -117,13 +127,14 @@ int main(int argc, char ** argv ){
     };
     
     //Program Finished
-    std::cout <<"****************************** program ended  ************************************"<<std::endl;
+    std::cout <<"***************** program ended  ************************"<<std::endl;
     std::cout <<"Total number of events: "<<events_number <<std::endl;
+    std::cout <<"Input file name: "<<in_file_name <<std::endl;
     std::cout <<"Output file name: "<<out_file_name <<std::endl;
     std::cout <<"Good events: "<<good_events <<std::endl;
     std::cout <<"Total efficiency "<<(good_events*1.0)/(events_number*1.0)*100<<"%" <<std::endl;
     std::cout <<"Computing time "<< timer.ElapsedTime() <<  " seconds " << std::endl;
-    std::cout <<"****************************** program ended  ************************************"<<std::endl;
+    std::cout <<"******************* program ended  **********************"<<std::endl;
     return 0;
 }
 
