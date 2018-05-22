@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <omp.h>
 
 //Vector calculations class
 #include "Vector.h"
