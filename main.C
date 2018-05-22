@@ -1,6 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <thread>
+#include<deque>
+#include <mutex>
 
 //Vector calculations class
 #include "Vector.h"
@@ -37,29 +40,93 @@ public:
 };
 
 enum LineType Classify(std::string Line);
+void ReadEvents(const std::string & in_file_name);
+//Thread managing//////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::deque<Event> event_stream;
+std::deque<Event> event_orig_stream;
+
+std::mutex mute;
+std::mutex muteprinter;
+std::condition_variable time_to_read;
+int events_read;
+int events_given;
 
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char * argv[] ){
-	    
-    Timer timer;
     
+    events_read=0;
+    events_given=0;
+    
+    int number_of_threads=std::stoi(argv[1]);
+    
+    Timer timer;
     timer.Start();
+    
     //External Files
-    std::string Line; 
-    std::string in_file_name;     //="./Events/GammaEvents.0001_singlenononono";
-    std::string out_file_name;    //="./Tracked/tracked_doublenononono";
+    std::string in_file_name;
+    std::string out_file_name="provaaa";
     if (argc==3){
-    	in_file_name=argv[1];
-	out_file_name=argv[2];
+        in_file_name=argv[2];
     }
     if (argc!=3){
-	    std::cout<<"Reqiuired input and out files!";
+        std::cout<<"Required input files!";
     }
     std::ifstream infile(in_file_name);
     if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
-
+    
     std::ofstream out(out_file_name);
     
+    //managing threads
+    std::thread reader(ReadEvents, in_file_name);
+    std::thread workers[number_of_threads];
+    
+    for (int i=0; i<number_of_threads; i++){
+        workers[i]=std::thread (EvaluateEvents);
+    }
+    
+    
+    
+    
+    //Loop on file lines
+    
+    
+    return 0;
+}
+
+void EvaluateEvents(){
+    Event event_tmp, event_orig;
+    Process processor;
+    int cnt=0;
+    while (1){
+        std::unique_lock<std::mutex> lck(mute);
+        while(event_stream.size()<1) {
+            time_to_read.wait(lck);
+        }
+        event_tmp=event_stream.pop_front();//to do
+        event_orig_stream=event_orig.pop_front();
+        cnt=events_read++;
+        lck.unlock();
+        processor.ClearAll();
+        processor.LoadEvent(event_tmp);
+        processor.AddOriginal(event_orig);
+        processor.EvaluateEvent(out);
+        
+        muteprinter.lock();
+        processor.Print();
+        muteprinter.unlock();
+    }
+    
+}
+
+void ReadEvents(const std::string & in_file_name){
+    //Program start
+    std::cout <<"############################################################"<<std::endl;
+    std::cout <<"**************** program started ***************************"<<std::endl;
+    int events_number=-1;
+    bool skip=true;
+    
+    std::string Line;
     //Vectors and points to read from the file
     Vec3 vec_tmp(0, 0, 0);
     InteractionPt point_tmp;
@@ -67,7 +134,7 @@ int main(int argc, char * argv[] ){
     
     //Class that describes the single event
     Event event_tmp, event_orig;
-
+    
     //Class to process the single event
     Process processor;
     
@@ -75,13 +142,6 @@ int main(int argc, char * argv[] ){
     const int MAX_EVENTS=5000000;
     int good_events=0;
     
-    //Program start
-    std::cout <<"############################################################"<<std::endl;
-    std::cout <<"**************** program started ***************************"<<std::endl;
-    int events_number=-1;
-    bool skip=true;
-    
-    //Loop on file lines
     while (std::getline(infile, Line) && events_number<MAX_EVENTS) { //number of events maximum read MAX_EVENTS
         //The read line is classified
         if (skip) { //Jump Header
@@ -97,10 +157,7 @@ int main(int argc, char * argv[] ){
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's process this event!
                     std::cout <<"Analyzing a good event, nr. " <<events_number <<std::endl;
                     good_events++;
-                    processor.ClearAll();
-                    processor.LoadEvent(event_tmp);
-                    processor.AddOriginal(event_orig);
-                    processor.EvaluateEvent(out);
+
                 }
                 event_tmp.Clear();
                 event_orig.Clear();
@@ -124,8 +181,7 @@ int main(int argc, char * argv[] ){
                 break;
             }
         }
-    };
-    
+    }
     //Program Finished
     std::cout <<"***************** program ended  ************************"<<std::endl;
     std::cout <<"Total number of events: "<<events_number <<std::endl;
@@ -135,10 +191,8 @@ int main(int argc, char * argv[] ){
     std::cout <<"Total efficiency "<<(good_events*1.0)/(events_number*1.0)*100<<"%" <<std::endl;
     std::cout <<"Computing time "<< timer.ElapsedTime() <<  " seconds " << std::endl;
     std::cout <<"******************* program ended  **********************"<<std::endl;
-    return 0;
+    
 }
-
-
 
 enum LineType Classify(std::string Line){
     if(!Line.compare(0, 4, "-100"))
