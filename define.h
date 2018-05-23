@@ -51,8 +51,7 @@ private:
 void EvaluateEvents();
 void ReadEvents(const std::string & in_file_name);
 
-std::deque<Event> event_stream;
-std::deque<Event> event_orig_stream;
+
 
 std::condition_variable wait_reader;
 std::condition_variable wait_worker;
@@ -80,6 +79,20 @@ public:
         reader=std::thread(ReadEvents, in_file_name);
         for (auto& th : workers) th=std::thread(EvaluateEvents);
     }
+    int WaitForReader(){
+        if (event_orig_stream.size()>1){
+            return 0;
+        }else{
+            return 0;
+        }
+    };
+    int WaitForWorker(){
+        if (event_orig_stream.size()<1000){
+            return 0;
+        }else{
+            return 0;
+        }
+    };
     void Go(){
         std::unique_lock<std::mutex> lck(mutereader);
         ready = true;
@@ -89,10 +102,16 @@ public:
         for (auto& th : workers) th.join();
         reader.join();
     }
+    std::deque<Event> event_stream;
+    std::deque<Event> event_orig_stream;
 private:
     std::vector<std::thread> workers;
     std::thread reader;
+
 };
+
+Workers workers;
+
 
 //Classification of a line/////////////////////////////////////////////////////////////////
 enum LineType Classify(std::string Line){
@@ -119,18 +138,15 @@ void EvaluateEvents(){
     std::unique_lock<std::mutex> lck(mutereader);
     while (!ready) wait_reader.wait(lck);
     
-    while (event_stream.size()>0){//problema quando parte
+    while (workers.event_stream.size()>0){//problema quando parte
         
-        
-        if (event_stream.size()>1000){
-            //make reader wait
-        }
+        workers.WaitForReader();
         
         mutereader.lock();
-        event_tmp=event_stream.front();//reads trom queue
-        event_stream.pop_front();
-        event_orig=event_orig_stream.front();
-        event_orig_stream.pop_front();
+        event_tmp=workers.event_stream.front();//reads trom queue
+        workers.event_stream.pop_front();
+        event_orig=workers.event_orig_stream.front();
+        workers.event_orig_stream.pop_front();
         cnt=events_read++;
         mutereader.unlock();
         
@@ -175,10 +191,7 @@ void ReadEvents(const std::string & in_file_name){
         
         //Notify worker threads to start computing
 
-        if (event_stream.size()<1){
-            //make evaluation wait
-        }
-
+        workers.WaitForWorker();
         
         //The read line is classified
         if (skip) { //Jump Header
@@ -193,8 +206,8 @@ void ReadEvents(const std::string & in_file_name){
                 events_number++;
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's load this event in the tail
                     good_events++;
-                    event_stream.push_back(event_tmp);
-                    event_orig_stream.push_back(event_orig);
+                    workers.event_stream.push_back(event_tmp);
+                    workers.event_orig_stream.push_back(event_orig);
                 }
                 event_tmp.Clear();
                 event_orig.Clear();
