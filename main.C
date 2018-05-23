@@ -1,8 +1,9 @@
+//Standard Libraries
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <thread>
-#include<deque>
+#include <deque>
 #include <mutex>
 
 //Vector calculations class
@@ -14,6 +15,7 @@
 //Processing event class
 #include "Process.h"
 
+
 //Classification of the line///////////////////////////////////////////////////////////////////////////////////////
 enum LineType {
     BLANK_EVENT,
@@ -22,6 +24,7 @@ enum LineType {
     ORIGINAL_EVENT,
     HEADER_END
 };
+
 
 //Timer to beanchmark the code/////////////////////////////////////////////////////////////////////////////////////
 class Timer {
@@ -42,6 +45,8 @@ public:
 enum LineType Classify(std::string Line);
 void EvaluateEvents();
 void ReadEvents(const std::string & in_file_name);
+
+
 //Thread managing//////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::deque<Event> event_stream;
@@ -56,37 +61,48 @@ int events_given;
 int events_number;
 int good_events;
 
+
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char * argv[] ){
     
+    //Program start
+    std::cout <<"############################################################"<<std::endl;
+    std::cout <<"**************** program started ***************************"<<std::endl;
+
+    //Global variables initialization
     events_read=0;
     events_given=0;
     events_number=-1;
     good_events=0;
     
-    int number_of_threads=std::stoi(argv[1]);
+    //Number of threads
+    int number_of_threads=1;
+    if (std::stoi(argv[1])>0 && std::stoi(argv[1])<25){
+        number_of_threads=std::stoi(argv[1]);
+    }else{
+        std::cout <<"Something is wrong with the number of threads, lanching with one"<<std::endl;
+    }
     
+    //Starting timer
     Timer timer;
     timer.Start();
     
     //External Files
     std::string in_file_name;
-    std::string out_file_name="provaaa";
+    std::string out_file_name="./Tracked/output";
     if (argc==3){
         in_file_name=argv[2];
-    }
-    if (argc!=3){
+    }else{
         std::cout<<"Required input files!";
+        std::cout<<"0->file name   1->number of threads   2->inputfile"<<std::endl;
     }
     std::ifstream infile(in_file_name);
     if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
-    
     std::ofstream out(out_file_name);
     
-    //managing threads
+    //managing and launching threads
     std::thread reader(ReadEvents, infile);
     std::thread workers[number_of_threads];
-    
     for (int i=0; i<number_of_threads; i++){
         workers[i]=std::thread(EvaluateEvents);
     }
@@ -96,6 +112,8 @@ int main(int argc, char * argv[] ){
     for (int i=0; i<number_of_threads; i++){
         workers[i].join();
     }
+    
+    //finish the program and return stats
     std::cout <<"***************** program ended  ************************"<<std::endl;
     std::cout <<"Total number of events: "<<events_number <<std::endl;
     std::cout <<"Input file name: "<<in_file_name <<std::endl;
@@ -104,12 +122,12 @@ int main(int argc, char * argv[] ){
     std::cout <<"Total efficiency "<<(good_events*1.0)/(events_number*1.0)*100<<"%" <<std::endl;
     std::cout <<"Computing time "<< timer.ElapsedTime() <<  " seconds " << std::endl;
     std::cout <<"******************* program ended  **********************"<<std::endl;
-    
-    
-    
+
     return 0;
 }
 
+
+//Worker function//////////////////////////////////////////////////////////////////////////
 void EvaluateEvents(){
     Event event_tmp, event_orig;
     Process processor;
@@ -135,10 +153,9 @@ void EvaluateEvents(){
     
 }
 
+
+//Reader function///////////////////////////////////////////////////////////////////////
 void ReadEvents(std::ifstream & infile){
-    //Program start
-    std::cout <<"############################################################"<<std::endl;
-    std::cout <<"**************** program started ***************************"<<std::endl;
     int events_number=-1;
     bool skip=true;
     
@@ -199,11 +216,13 @@ void ReadEvents(std::ifstream & infile){
             }
         }
     }
-    //Program Finished
+    //Reading from file finished
 
     
 }
 
+
+//Classification of a line/////////////////////////////////////////////////////////////////
 enum LineType Classify(std::string Line){
     if(!Line.compare(0, 4, "-100"))
         return EVENT_START;
