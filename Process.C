@@ -250,14 +250,13 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
         meritfactors[0].nr=-1;
         return NrhA*sigma*exp(-NrhA*sigma*gedistancematr[interactionorder[0]][interactionorder[0]]);
     }else{
-        while (meritfactors[i-1].nr==interactionorder[i-1]){
+        while (meritfactors[i].nr==interactionorder[i]){
             E1=E2;
             E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
             i++;
         }
-        for(i--; i<size; i++){
-            if (i==0){
-                i++;
+        for(; i<size; i++){
+            if (i==1){
                 sigma=ComputeNishinaSigmaTotal(E1);
                 ptmp=NrhA*exp(-sigma*NrhA*gedistancematr[interactionorder[i-1]][interactionorder[i-1]]);
                 ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], E1, E2);
