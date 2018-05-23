@@ -40,6 +40,7 @@ public:
 };
 
 enum LineType Classify(std::string Line);
+void EvaluateEvents();
 void ReadEvents(const std::string & in_file_name);
 //Thread managing//////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,11 +53,16 @@ std::condition_variable time_to_read;
 int events_read;
 int events_given;
 
+int events_number;
+int good_events;
+
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char * argv[] ){
     
     events_read=0;
     events_given=0;
+    events_number=-1;
+    good_events=0;
     
     int number_of_threads=std::stoi(argv[1]);
     
@@ -78,17 +84,27 @@ int main(int argc, char * argv[] ){
     std::ofstream out(out_file_name);
     
     //managing threads
-    std::thread reader(ReadEvents, in_file_name);
+    std::thread reader(ReadEvents, infile);
     std::thread workers[number_of_threads];
     
     for (int i=0; i<number_of_threads; i++){
-        workers[i]=std::thread (EvaluateEvents);
+        workers[i]=std::thread(EvaluateEvents);
     }
     
+    //join all threads
+    reader.join();
+    for (int i=0; i<number_of_threads; i++){
+        workers[i].join();
+    }
+    std::cout <<"***************** program ended  ************************"<<std::endl;
+    std::cout <<"Total number of events: "<<events_number <<std::endl;
+    std::cout <<"Input file name: "<<in_file_name <<std::endl;
+    std::cout <<"Output file name: "<<out_file_name <<std::endl;
+    std::cout <<"Good events: "<<good_events <<std::endl;
+    std::cout <<"Total efficiency "<<(good_events*1.0)/(events_number*1.0)*100<<"%" <<std::endl;
+    std::cout <<"Computing time "<< timer.ElapsedTime() <<  " seconds " << std::endl;
+    std::cout <<"******************* program ended  **********************"<<std::endl;
     
-    
-    
-    //Loop on file lines
     
     
     return 0;
@@ -104,22 +120,22 @@ void EvaluateEvents(){
             time_to_read.wait(lck);
         }
         event_tmp=event_stream.pop_front();//to do
-        event_orig_stream=event_orig.pop_front();
+        event_orig=event_orig_stream.pop_front();
         cnt=events_read++;
         lck.unlock();
         processor.ClearAll();
         processor.LoadEvent(event_tmp);
         processor.AddOriginal(event_orig);
-        processor.EvaluateEvent(out);
+ //       processor.EvaluateEvent(out);
         
         muteprinter.lock();
-        processor.Print();
+ //       processor.Print();
         muteprinter.unlock();
     }
     
 }
 
-void ReadEvents(const std::string & in_file_name){
+void ReadEvents(std::ifstream & infile){
     //Program start
     std::cout <<"############################################################"<<std::endl;
     std::cout <<"**************** program started ***************************"<<std::endl;
@@ -142,6 +158,7 @@ void ReadEvents(const std::string & in_file_name){
     const int MAX_EVENTS=5000000;
     int good_events=0;
     
+    //Loop on file lines
     while (std::getline(infile, Line) && events_number<MAX_EVENTS) { //number of events maximum read MAX_EVENTS
         //The read line is classified
         if (skip) { //Jump Header
@@ -183,14 +200,7 @@ void ReadEvents(const std::string & in_file_name){
         }
     }
     //Program Finished
-    std::cout <<"***************** program ended  ************************"<<std::endl;
-    std::cout <<"Total number of events: "<<events_number <<std::endl;
-    std::cout <<"Input file name: "<<in_file_name <<std::endl;
-    std::cout <<"Output file name: "<<out_file_name <<std::endl;
-    std::cout <<"Good events: "<<good_events <<std::endl;
-    std::cout <<"Total efficiency "<<(good_events*1.0)/(events_number*1.0)*100<<"%" <<std::endl;
-    std::cout <<"Computing time "<< timer.ElapsedTime() <<  " seconds " << std::endl;
-    std::cout <<"******************* program ended  **********************"<<std::endl;
+
     
 }
 

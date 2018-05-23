@@ -42,10 +42,6 @@ int InteractionPt::GetSegment(){
 
 Event::Event(){}
 
-Event::Event(std::string Line){
-
-}
-
 Event::Event(const InteractionPt & point){
 	points.push_back(point);
 }
@@ -107,6 +103,7 @@ void Event::MergePoints(std::vector<int> interaction_numbers){
     InteractionPt inttmp(points.at(interaction_numbers.at(0)).GetSegment(), etot, A, points.at(interaction_numbers.at(0)).GetDetector());
     points.at(interaction_numbers.at(0))=inttmp;
 }
+
 
 //operator overloading to input data///////////////////////////////////////////////
 std::istream & operator >> (std::istream & in, InteractionPt & b){

@@ -3,6 +3,9 @@
 #include "Vector.h"
 #include <vector>
 #include <iostream>
+#include <utility>
+
+//Interaction point class description//////
 class InteractionPt{
 	public:
         InteractionPt();
@@ -22,10 +25,11 @@ class InteractionPt{
 
 };
 
+
+//Event class description/////////////////
 class Event{
 	public:
 		Event();
-		Event(std::string Line);
 		Event(const InteractionPt & point);
 		void AddInteractionPt(const InteractionPt & point);
         void SetEventNumber (long i);
