@@ -14,7 +14,7 @@ clear
 for f in $FILESIN
 do
 	echo "Launching program, file $f"
-	./my_prog ./Events/$f ./Tracked/$f &
+	./my_prog ./Events/$f ./Tracked/$f 
 done
 
 echo "Finished Tracking tracked files in /Tracked/$f"
