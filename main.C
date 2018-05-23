@@ -49,12 +49,16 @@ int main(int argc, char * argv[] ){
     std::string in_file_name;     //="./Events/GammaEvents.0001_singlenononono";
     std::string out_file_name;    //="./Tracked/tracked_doublenononono";
     if (argc==3){
-    	in_file_name=argv[1];
-	out_file_name=argv[2];
+    	in_file_name=argv[2];
+    }else{
+        std::cout<<"Reqiuired single input file!"<<std::endl;
+        std::cout<<"argv[0]=path_to_eecutable argv[1]=number_of_threads argv[2]=path_to_input_file"<<std::endl;
+
     }
-    if (argc!=3){
-	    std::cout<<"Reqiuired input and out files!";
+    for (int i=0; i<argc; i++){
+        std::cout <<argv[i]<<std::endl;
     }
+
     std::ifstream infile(in_file_name);
     if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
 
