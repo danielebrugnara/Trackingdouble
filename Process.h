@@ -19,9 +19,13 @@ struct finalevent{
 class Process{
 public:
     Process();
+    //Loads event in the processor class and computes matrices
     void LoadEvent(const Event & ev);
+    //Evaluates the event
     void EvaluateEvent(std::ostream & out);
+    //Adds original event to compare
     void AddOriginal(const Event & ev_orig);
+    //Clears everything
     void ClearAll();
     
 private:
@@ -32,22 +36,33 @@ private:
     };
     
     //methods//////////////////////////////////////////
+    
+    //Merges close points
     void MergePoints();
+    //Computes all distances and sets them in a matrix
     void ComputeDistances();
-    double ComputePhotoelectricSigma(double E);
+    //Computes photoelectric cross sections
     void ComputePhotoelectricSigmas();
+    double ComputePhotoelectricSigma(double E);
+    //Computes the scattering angle
     double ComputeScatteringCosAngle(const int & i, const int & j, const int & k);
     double ComputeScatteringCosAngle(const int & j, const int & k);
+    //Computes the gaussian distribution
     double ComputeComptonFactor(const int & i, const int & j, const int & k, const double & E1,  const double & E2);
-        double ComputeComptonFactor(const int & i, const int & j, const double & E1,  const double & E2);
+    double ComputeComptonFactor(const int & i, const int & j, const double & E1,  const double & E2);
+    
     double ComputeNishinaSigma(const int & i, const int & j, const int & k, const double & E1,  const double & E2);
     double ComputeNishinaSigma(const int & i, const int & j, const double & E1,  const double & E2);
     double ComputeNishinaSigmaTotal(const double & E);
+    //Distances traveled in germanium
     double DistanceGe(const int &i, const int & j);
     double DistanceGe(const int &i);
+    //Function to compute merit factor with a given order, also checks where to start from to computegiven the previous path
     double ComputeTotalFactor(const std::vector <int> & interactionorder, std::vector <meritfactor> & meritfactors, const double & etot);
+    //Single and double gammas probability
     finalevent ComputeDoubleProbability();
     finalevent ComputeSingleProbability();
+    
     void Print(std::ostream & out, const int & a, const int & b);
     
     //objects//////////////////////////////////////////

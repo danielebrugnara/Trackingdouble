@@ -1,66 +1,9 @@
-//Standard Libraries
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <thread>
-#include <deque>
-#include <mutex>
+//All definisions set in external file for readability
+#include "define.h"
 
-//Vector calculations class
-#include "Vector.h"
-
-//Event classification class
-#include "Event.h"
-
-//Processing event class
-#include "Process.h"
-
-
-//Classification of the line///////////////////////////////////////////////////////////////////////////////////////
-enum LineType {
-    BLANK_EVENT,
-    SCATTERING_EVENT,
-    EVENT_START,
-    ORIGINAL_EVENT,
-    HEADER_END
-};
-
-
-//Timer to beanchmark the code/////////////////////////////////////////////////////////////////////////////////////
-class Timer {
-private:
-    unsigned long begTime;
-public:
-    void Start() {
-        begTime = clock();
-    }
-    unsigned long ElapsedTime() {
-        return ((unsigned long) clock() - begTime) / CLOCKS_PER_SEC;
-    }
-    bool IsTimeout(unsigned long seconds) {
-        return seconds >= ElapsedTime();
-    }
-};
-
-enum LineType Classify(std::string Line);
+//Function declarations
 void EvaluateEvents();
-void ReadEvents(const std::string & in_file_name);
-
-
-//Thread managing//////////////////////////////////////////////////////////////////////////////////////////////////
-
-std::deque<Event> event_stream;
-std::deque<Event> event_orig_stream;
-
-std::mutex mute;
-std::mutex muteprinter;
-std::condition_variable time_to_read;
-int events_read;
-int events_given;
-
-int events_number;
-int good_events;
-
+void ReadEvents(std::ifstream & infile);
 
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char * argv[] ){
@@ -96,9 +39,12 @@ int main(int argc, char * argv[] ){
         std::cout<<"Required input files!";
         std::cout<<"0->file name   1->number of threads   2->inputfile"<<std::endl;
     }
+    
+    //Input and output streams
     std::ifstream infile(in_file_name);
-    if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
     std::ofstream out(out_file_name);
+
+    if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
     
     //managing and launching threads
     std::thread reader(ReadEvents, infile);
@@ -129,16 +75,19 @@ int main(int argc, char * argv[] ){
 
 //Worker function//////////////////////////////////////////////////////////////////////////
 void EvaluateEvents(){
-    Event event_tmp, event_orig;
+    Event event_tmp;
+    Event event_orig;
     Process processor;
     int cnt=0;
-    while (1){
+    while (event_stream.size()>0){
         std::unique_lock<std::mutex> lck(mute);
         while(event_stream.size()<1) {
             time_to_read.wait(lck);
         }
-        event_tmp=event_stream.pop_front();//to do
-        event_orig=event_orig_stream.pop_front();
+        event_tmp=event_stream.front();//to do
+        event_stream.pop_front();
+        event_orig=event_orig_stream.front();
+        event_orig_stream.pop_front();
         cnt=events_read++;
         lck.unlock();
         processor.ClearAll();
@@ -222,16 +171,4 @@ void ReadEvents(std::ifstream & infile){
 }
 
 
-//Classification of a line/////////////////////////////////////////////////////////////////
-enum LineType Classify(std::string Line){
-    if(!Line.compare(0, 4, "-100"))
-        return EVENT_START;
-    if(!Line.compare(0, 5, " -101")||!Line.compare(0, 5, " -102"))
-        return BLANK_EVENT;
-    if (!Line.compare(0, 5, "   -1"))
-        return ORIGINAL_EVENT;
-    if (!Line.compare(0, 1, "$"))
-        return HEADER_END;
-    else
-        return SCATTERING_EVENT;
-}
+

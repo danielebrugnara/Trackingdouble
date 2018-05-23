@@ -87,7 +87,7 @@ double Event::PointsDistance(const int & i, const int & j){
 }
 
 //Merge interaction points that are close together////////////////////////////////////////////////
-void Event::MergePoints(std::vector<int> interaction_numbers){
+void Event::MergePoints(const std::vector<int> & interaction_numbers){
 
     double etmp=points.at(interaction_numbers.at(0)).GetEnergy();
     double etot=etmp;

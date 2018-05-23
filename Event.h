@@ -39,7 +39,7 @@ class Event{
         InteractionPt GetInteractionPt(const int & i) const;
         double GetTotalEnergy();
         double PointsDistance(const int & i, const int & j);
-        void MergePoints(std::vector<int> interaction_numbers);
+        void MergePoints(const std::vector<int> & interaction_numbers);
 	private:
 		std::vector<InteractionPt> points;
         long eventnumber;
