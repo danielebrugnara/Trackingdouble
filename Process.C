@@ -255,8 +255,9 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
             E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
             i++;
         }
-        for(; i<size; i++){
-            if (i==1){
+        for(i--; i<size; i++){
+            if (i==0){
+                i++;
                 sigma=ComputeNishinaSigmaTotal(E1);
                 ptmp=NrhA*exp(-sigma*NrhA*gedistancematr[interactionorder[i-1]][interactionorder[i-1]]);
                 ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], E1, E2);
@@ -265,7 +266,6 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
                 meritfactors[i-1].nr=interactionorder[i-1];
             }else{
                 E1=E2;
-                //                std::cout<<i<<"\n";
                 E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
                 ptmp=meritfactors[i-2].factor;
                 sigma=ComputeNishinaSigmaTotal(E1);
@@ -282,30 +282,7 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
         meritfactors[i-1].factor=meritfactors[i-2].factor*sigma*NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
         meritfactors[i-1].nr=interactionorder[i-1];
         return meritfactors[i-1].factor;
-        /*
-         
-         for (i--;i<size-1; i++){
-         if (i<1){
-         E1=etot;
-         E2=E1-ev.GetInteractionPt(interactionorder[0]).GetEnergy();
-         sigma=ComputeNishinaSigmaTotal(E1);
-         meritfactors[0].factor=exp(-sigma*NrhA*gedistancematr[interactionorder[0]][interactionorder[0]]);
-         meritfactors[0].nr=interactionorder[0];
-         }else{
-         ptmp=meritfactors[i-1].factor;
-         E1=E2;
-         E2=E1-ev.GetInteractionPt(interactionorder[i]).GetEnergy();
-         ptmp*=ComputeComptonFactor(interactionorder[i-1], interactionorder[i], interactionorder[i+1], E1, E2);
-         ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], interactionorder[i+1], E1, E2);
-         ptmp*=NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-1]][interactionorder[i]]);
-         meritfactors[i].nr=interactionorder[i];
-         meritfactors[i].factor=ptmp;
-         }
-         }
-         meritfactors[i].factor=meritfactors[i-1].factor*gedistancematr[interactionorder[i-1]][interactionorder[i]]*photosigma[interactionorder[i]];
-         meritfactors[i].nr=interactionorder[i];
-         return meritfactors[i].factor;
-         */
+
     }
 }
 
