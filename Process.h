@@ -22,7 +22,7 @@ public:
     //Loads event in the processor class and computes matrices
     void LoadEvent(const Event & ev);
     //Evaluates the event
-    void EvaluateEvent(std::ostream & out);
+    void EvaluateEvent();
     //Adds original event to compare
     void AddOriginal(const Event & ev_orig);
     //Clears everything

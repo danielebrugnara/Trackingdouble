@@ -365,7 +365,7 @@ finalevent Process::ComputeSingleProbability(){
 
 
 //Evaluation of the event/////////////////////////////////////////////////////////////////////////////////////
-void Process::EvaluateEvent(std::ostream & out){
+void Process::EvaluateEvent(){
     double good1, good2;
     std::cout <<"Computing single probability" <<std::endl;
     finalevent psingle=ComputeSingleProbability();

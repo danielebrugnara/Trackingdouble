@@ -33,6 +33,7 @@ class Event{
 		Event(const InteractionPt & point);
 		void AddInteractionPt(const InteractionPt & point);
         void SetEventNumber (long i);
+        long GetEventNumber () const;
 		size_t NumberofInteractionPts() const;
 		void Clear();
 		void Print(std::ostream & out)const;

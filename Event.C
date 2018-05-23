@@ -54,6 +54,10 @@ void Event::SetEventNumber(long i){
     eventnumber=i;
 }
 
+long Event::GetEventNumber()const{
+    return eventnumber;
+}
+
 size_t Event::NumberofInteractionPts()const{
 	return points.size();
 }
