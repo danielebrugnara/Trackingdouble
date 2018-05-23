@@ -3,7 +3,7 @@
 
 //Function declarations
 void EvaluateEvents();
-void ReadEvents(std::ifstream & infile);
+void ReadEvents(const std::string & in_file_name);
 
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char * argv[] ){
@@ -23,7 +23,7 @@ int main(int argc, char * argv[] ){
     if (std::stoi(argv[1])>0 && std::stoi(argv[1])<25){
         number_of_threads=std::stoi(argv[1]);
     }else{
-        std::cout <<"Something is wrong with the number of threads, lanching with one"<<std::endl;
+        std::cout <<"Something is wrong with the number of threads, lanching with only one"<<std::endl;
     }
     
     //Starting timer
@@ -41,25 +41,23 @@ int main(int argc, char * argv[] ){
     }
     
     //Input and output streams
-    std::ifstream infile(in_file_name);
     std::ofstream out(out_file_name);
 
-    if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
     
-    //managing and launching threads
-    std::thread reader(ReadEvents, infile);
+    //Managing and launching threads
+    std::thread reader(ReadEvents, in_file_name);
     std::thread workers[number_of_threads];
     for (int i=0; i<number_of_threads; i++){
         workers[i]=std::thread(EvaluateEvents);
     }
     
-    //join all threads
+    //Join all threads
     reader.join();
     for (int i=0; i<number_of_threads; i++){
         workers[i].join();
     }
     
-    //finish the program and return stats
+    //Finish the program and return stats
     std::cout <<"***************** program ended  ************************"<<std::endl;
     std::cout <<"Total number of events: "<<events_number <<std::endl;
     std::cout <<"Input file name: "<<in_file_name <<std::endl;
@@ -79,12 +77,12 @@ void EvaluateEvents(){
     Event event_orig;
     Process processor;
     int cnt=0;
-    while (event_stream.size()>0){
+    while (event_stream.size()>0){//problema quando parte
         std::unique_lock<std::mutex> lck(mute);
         while(event_stream.size()<1) {
             time_to_read.wait(lck);
         }
-        event_tmp=event_stream.front();//to do
+        event_tmp=event_stream.front();//reads trom queue
         event_stream.pop_front();
         event_orig=event_orig_stream.front();
         event_orig_stream.pop_front();
@@ -104,7 +102,9 @@ void EvaluateEvents(){
 
 
 //Reader function///////////////////////////////////////////////////////////////////////
-void ReadEvents(std::ifstream & infile){
+void ReadEvents(const std::string & in_file_name){
+    std::ifstream infile(in_file_name);
+    if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
     int events_number=-1;
     bool skip=true;
     
@@ -140,7 +140,8 @@ void ReadEvents(std::ifstream & infile){
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's process this event!
                     std::cout <<"Analyzing a good event, nr. " <<events_number <<std::endl;
                     good_events++;
-
+                    event_stream.push_back(event_tmp);
+                    event_orig_stream.push_back(event_orig);
                 }
                 event_tmp.Clear();
                 event_orig.Clear();
@@ -154,7 +155,6 @@ void ReadEvents(std::ifstream & infile){
                 event_tmp.AddInteractionPt(point_tmp);
                 break;
             }
-                
             case ORIGINAL_EVENT:{//might be recorded to confront tracked with original
                 std::stringstream(Line)>> point_orig;
                 event_orig.AddInteractionPt(point_orig);
@@ -166,8 +166,6 @@ void ReadEvents(std::ifstream & infile){
         }
     }
     //Reading from file finished
-
-    
 }
 
 
