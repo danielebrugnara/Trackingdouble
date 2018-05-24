@@ -71,8 +71,6 @@ private:
     size_t nrpts;
     std::vector<double> photosigma;
     std::vector<double> totalfactors;
-    int number_of_double;
-    int number_of_single;
 };
 
 
