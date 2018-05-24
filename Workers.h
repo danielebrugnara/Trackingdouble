@@ -21,7 +21,7 @@ public:
     void Join();
     
     void EvaluateEvents();
-    void ReadEvents(const std::string & in_file_name);
+    static void ReadEvents(const std::string & in_file_name);
     
     std::deque<Event> event_stream;
     std::deque<Event> event_orig_stream;

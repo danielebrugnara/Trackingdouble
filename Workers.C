@@ -43,15 +43,15 @@ void Workers::EvaluateEvents(){
     std::unique_lock<std::mutex> lck(mutereader);
     while (!ready) wait_reader.wait(lck);
     
-    while (workers.event_stream.size()>0){//problema quando parte
+    while (event_stream.size()>0){//problema quando parte
         
-        workers.WaitForReader();
+        WaitForReader();
         
         mutereader.lock();
-        event_tmp=workers.event_stream.front();//reads trom queue
-        workers.event_stream.pop_front();
-        event_orig=workers.event_orig_stream.front();
-        workers.event_orig_stream.pop_front();
+        event_tmp=event_stream.front();//reads trom queue
+        event_stream.pop_front();
+        event_orig=event_orig_stream.front();
+        event_orig_stream.pop_front();
         cnt=events_read++;
         mutereader.unlock();
         
@@ -96,7 +96,7 @@ void Workers::ReadEvents(const std::string & in_file_name){
         
         //Notify worker threads to start computing
         
-        workers.WaitForWorker();
+        WaitForWorker();
         
         //The read line is classified
         if (skip) { //Jump Header
@@ -111,8 +111,8 @@ void Workers::ReadEvents(const std::string & in_file_name){
                 events_number++;
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's load this event in the tail
                     good_events++;
-                    workers.event_stream.push_back(event_tmp);
-                    workers.event_orig_stream.push_back(event_orig);
+                    event_stream.push_back(event_tmp);
+                    event_orig_stream.push_back(event_orig);
                 }
                 event_tmp.Clear();
                 event_orig.Clear();
