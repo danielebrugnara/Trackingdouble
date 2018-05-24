@@ -66,7 +66,8 @@ private:
     double const Z_ge=32;
     double const r0=2.81794e-12;//raggio classico elettrone
     double const NrhA=4.41348e19; //1/mm^3
-    double const treashold=1;
+    double const treashold_double=1;
+    double const treashold_single=1;
     double const sigma_E=1; //2keV      Risoluzione energetica
     double const sigma_r=4; //4mm       Risoluzione posizionale
     double const pi=3.14159265359;

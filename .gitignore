@@ -3,7 +3,7 @@
 *.swp
 .DS_Store
 Gamma*
-my_prog
+tracker
 output_double
 tracked_double
 
