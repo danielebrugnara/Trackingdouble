@@ -329,6 +329,7 @@ finalevent Process::ComputeDoubleProbability(){
             }while (std::next_permutation(part2.begin(), part2.end()));
         }while (std::next_permutation(part1.begin(), part1.end()));
     }
+    final.factor=pow(final.factor, 1.0/(2*ev.NumberofInteractionPts()-1));
     return final;
 }
 
@@ -360,6 +361,7 @@ finalevent Process::ComputeSingleProbability(){
             final.order1=interactionorder;
         }
     }while (std::next_permutation(interactionorder.begin(), interactionorder.end()));
+    final.factor=pow(final.factor, 1.0/(2*ev.NumberofInteractionPts()-1));//added to try
     return final;
 }
 
@@ -367,6 +369,7 @@ finalevent Process::ComputeSingleProbability(){
 //Evaluation of the event/////////////////////////////////////////////////////////////////////////////////////
 void Process::EvaluateEvent(std::ostream & out){
     double good1, good2;
+    number_of_double=number_of_single=0;
     std::cout <<"Computing single probability" <<std::endl;
     finalevent psingle=ComputeSingleProbability();
     std::cout<<psingle.factor<<"\n";
@@ -380,11 +383,18 @@ void Process::EvaluateEvent(std::ostream & out){
         if (good1>0.05||good2>0.10){
             std::cout<<"This event has more than 0.10 difference!!!!\n";
         }
-        //       double factor= (pdouble.factor-psingle.factor)/psingle.factor;
-        //        if (factor>treashold||1){
-        //            Print(out, pdouble.order1[0], pdouble.order2[0]);//
-        //        }
+               double factor= (pdouble.factor-psingle.factor)/psingle.factor;
+                if (factor>treashold){
+                    if(factor<0){
+                        number_of_single++;
+                    }else{
+                        number_of_double++;
+                    }
+                    Print(out, pdouble.order1[0], pdouble.order2[0]);//
+                }
     }
+    std::cout<<"\n\n\n\n\n\n NUMBER OF SINGLE : "<<number_of_single<<"\n";
+    std::cout<<"NUMBER OF DOUBLE : "<<number_of_double<<"\n";
 }
 
 void Process::Print(std::ostream & out, const int & a, const int & b){

@@ -6,6 +6,7 @@
 #define ECS 661.7
 
 #include <algorithm>
+#include <math.h>
 
 #include "Event.h"
 #include "Vector.h"
@@ -63,13 +64,15 @@ private:
     double const Z_ge=32;
     double const r0=2.81794e-12;//raggio classico elettrone
     double const NrhA=4.41348e19; //1/mm^3
-    double const treashold=0.5;
+    double const treashold=1;
     double const sigma_E=1; //2keV      Risoluzione energetica
     double const sigma_r=4; //4mm       Risoluzione posizionale
     double const pi=3.14159265359;
     size_t nrpts;
     std::vector<double> photosigma;
     std::vector<double> totalfactors;
+    int number_of_double;
+    int number_of_single;
 };
 
 
