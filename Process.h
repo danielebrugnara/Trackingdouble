@@ -11,6 +11,8 @@
 #include "Event.h"
 #include "Vector.h"
 
+
+
 struct finalevent{
     std::vector<int> order1;
     std::vector<int> order2;
@@ -21,7 +23,7 @@ class Process{
 public:
     Process();
     void LoadEvent(const Event & ev);
-    void EvaluateEvent(std::ostream & out);
+    void EvaluateEvent(std::ostream & out, int & number_of_single, int & number_of_double);
     void AddOriginal(const Event & ev_orig);
     void ClearAll();
     

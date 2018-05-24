@@ -20,9 +20,6 @@ enum LineType {
     HEADER_END
 };
 
-//Global variable, temporary
-int number_of_double;
-int number_of_single;
 
 //Timer to beanchmark the code/////////////////////////////////////////////////////////////////////////////////////
 class Timer {
@@ -44,11 +41,13 @@ enum LineType Classify(std::string Line);
 
 //MAIN////////////////////////////////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char * argv[] ){
-	    
+    
+    //Global variable, temporary
+    int number_of_double=0;
+    int number_of_single=0;
+    
     Timer timer;
     
-    number_of_double=number_of_single=0;
-
     
     timer.Start();
     //External Files
@@ -111,7 +110,8 @@ int main(int argc, char * argv[] ){
                     processor.ClearAll();
                     processor.LoadEvent(event_tmp);
                     processor.AddOriginal(event_orig);
-                    processor.EvaluateEvent(out);
+                    processor.EvaluateEvent(out, number_of_single, number_of_double);
+                    
                 }
                 event_tmp.Clear();
                 event_orig.Clear();
