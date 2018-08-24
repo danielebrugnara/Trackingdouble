@@ -460,7 +460,7 @@ void Process::EvaluateEvent(std::ostream & out, int & number_of_single, int & nu
 		}
 		//		double factor= (pdouble.factor-psingle.factor)/psingle.factor;
 		if (pdouble.factor>psingle.factor ){
-			if (  pdouble.factor/psingle.factor>1E3 ){
+			if (  pdouble.factor/psingle.factor>1E8 &&pdouble.factor>1E-5 && ev.NumberofInteractionPts()<4){
 				number_of_double++;
 				std::cout<<"I chose double, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 				
