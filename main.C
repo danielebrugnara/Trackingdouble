@@ -53,7 +53,7 @@ int main(int argc, char * argv[] ){
     //External Files
     std::string Line; 
     std::string in_file_name;     //="./Events/GammaEvents.0001_singlenononono";
-    std::string out_file_name;    //="./Tracked/tracked_doublenononono";
+    std::string out_file_name="proxa.txt";    //="./Tracked/tracked_doublenononono";
     if (argc==3){
     	in_file_name=argv[2];
     }else{
@@ -69,6 +69,7 @@ int main(int argc, char * argv[] ){
     if (!infile.is_open()) std::cout<<"Could not open the file" << std::endl;
 
     std::ofstream out(out_file_name);
+
     
     //Vectors and points to read from the file
     Vec3 vec_tmp(0, 0, 0);
@@ -105,7 +106,7 @@ int main(int argc, char * argv[] ){
                 event_orig.SetEventNumber(events_number);
                 events_number++;
                 if (abs(event_tmp.GetTotalEnergy()-ECS)<5){ //Let's process this event!
-                    std::cout <<"Analyzing a good event, nr. " <<events_number <<std::endl;
+       //             std::cout <<"Analyzing a good event, nr. " <<events_number <<std::endl;
                     good_events++;
                     processor.ClearAll();
                     processor.LoadEvent(event_tmp);
@@ -136,6 +137,7 @@ int main(int argc, char * argv[] ){
             }
         }
     };
+    out.close();
     
     //Program Finished
     std::cout <<"***************** program ended  ************************"<<std::endl;

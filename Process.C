@@ -445,43 +445,46 @@ finalevent Process::ComputeSingleProbability(){
 void Process::EvaluateEvent(std::ostream & out, int & number_of_single, int & number_of_double){
 	double good1, good2;
     if (ev.NumberofInteractionPts()<7){
-	std::cout <<"Computing single probability" <<std::endl;
+//	std::cout <<"Computing single probability" <<std::endl;
 	finalevent psingle=ComputeSingleProbability();
-	std::cout<<psingle.factor<<"\n";
-	std::cout <<"Computing double probability" <<std::endl;
+//	std::cout<<psingle.factor<<"\n";
+//	std::cout <<"Computing double probability" <<std::endl;
 	if (nrpts>1){
 		finalevent pdouble=ComputeDoubleProbability();
-		std::cout<<pdouble.factor<<"\n";
+//		std::cout<<pdouble.factor<<"\n";
 		good1=(ev.GetInteractionPt(pdouble.order1[0]).GetDirection()-ev_orig.GetInteractionPt(0).GetDirection()).Norm();
 		good2=(ev.GetInteractionPt(pdouble.order2[0]).GetDirection()-ev_orig.GetInteractionPt(1).GetDirection()).Norm();
 		//		std::cout<<"Percentage difference from original directions: "<<good1<<"        "<<good2 <<"\n";
 		if (good1>0.05||good2>0.10){
-			std::cout<<"This event has more than 0.10 difference!!!!\n";
+//			std::cout<<"This event has more than 0.10 difference!!!!\n";
 		}
 		//		double factor= (pdouble.factor-psingle.factor)/psingle.factor;
+
 		if (pdouble.factor>psingle.factor ){
 			if (  pdouble.factor/psingle.factor>1E8 &&pdouble.factor>1E-5 && ev.NumberofInteractionPts()<4){
 				number_of_double++;
-				std::cout<<"I chose double, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
-				
+                Print(out, pdouble.order1[0], pdouble.order2[0]);
+
+//				std::cout<<"I chose double, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 			}
 		}
 		if (psingle.factor>pdouble.factor ){
 			if ( psingle.factor/pdouble.factor>1E1){
-				std::cout<<"I chose single, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
+                Print(out, psingle.order1[0], pdouble.order2[0]);
+//				std::cout<<"I chose single, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 				number_of_single++;
 			}
 		}
 	}
-	std::cout<<"NUMBER OF SINGLE : "<<number_of_single<<"\n";
-	std::cout<<"NUMBER OF DOUBLE : "<<number_of_double<<" \n\n\n\n\n\n\n\n\n";
+//	std::cout<<"NUMBER OF SINGLE : "<<number_of_single<<"\n";
+//	std::cout<<"NUMBER OF DOUBLE : "<<number_of_double<<" \n\n\n\n\n\n\n\n\n";
     }
 }
 
 void Process::Print(std::ostream & out, const int & a, const int & b){
-    out <<"$"<<std::endl;
-    out <<ev.GetInteractionPt(a)<<std::endl;
-    out <<ev.GetInteractionPt(b)<<std::endl;
+ //   out <<"$"<<std::endl;
+    std::cout <<ev.GetInteractionPt(a)<<std::endl;
+//    out <<ev.GetInteractionPt(b)<<std::endl;
 }
 
 
