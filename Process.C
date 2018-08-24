@@ -8,7 +8,7 @@ Process::Process(){
 
 void Process::LoadEvent(const Event & ev){
     this->ev=ev;
-    MergePoints();
+//    MergePoints();
     nrpts=this->ev.NumberofInteractionPts();
     
     //  SmearPoints();
@@ -130,17 +130,71 @@ double Process::ComputeComptonFactor(const int & i, const int & j, const int & k
     double cosang=ComputeScatteringCosAngle(i, j, k);
     double Egeo=E1/(1.0+E1/mec2*(1-cosang));//sistemare
    // double err2=SQ(sigma_E)*SQ(Egeo/E1*(1+Egeo*(1-cosang)/mec2))+SQ(mec2*SQ(E2)/SQ(mec2+E2*(1-cosang)))*SQ(2*resolution)/(SQ(distancematr[j][k])+SQ(resolution)); //rough approximation, not even sure acout d(cos)/dr
-    double err2=16;
+    double r1x=ev.GetInteractionPt(i).GetPosition().X();
+    double r1y=ev.GetInteractionPt(i).GetPosition().Y();
+    double r1z=ev.GetInteractionPt(i).GetPosition().Z();
+    double r2x=ev.GetInteractionPt(j).GetPosition().X();
+    double r2y=ev.GetInteractionPt(j).GetPosition().Y();
+    double r2z=ev.GetInteractionPt(j).GetPosition().Z();
+    double r3x=ev.GetInteractionPt(k).GetPosition().X();
+    double r3y=ev.GetInteractionPt(k).GetPosition().Y();
+    double r3z=ev.GetInteractionPt(k).GetPosition().Z();
+
+
+    double err2=511./pow(1 - cosang,2)*5*sqrt(0.6666666666666666)*sqrt(((pow(r1x,2) + pow(r1y,2) + pow(r1z,2) + pow(r2x,2) +
+                                                  pow(r2y,2) - r1z*r2z + pow(r2z,2) - r2x*r3x + pow(r3x,2) - r1x*(r2x + r3x) - r2y*r3y +
+                                                  pow(r3y,2) - r1y*(r2y + r3y) - (r1z + r2z)*r3z + pow(r3z,2))*
+                                                 (pow(r1x,2)*pow(r2y,2) + pow(r1x,2)*pow(r2z,2) - 2*r1x*pow(r2y,2)*r3x -
+                                                  2*r1x*pow(r2z,2)*r3x + pow(r2y,2)*pow(r3x,2) + pow(r2z,2)*pow(r3x,2) +
+                                                  pow(r1z,2)*(pow(r2x - r3x,2) + pow(r2y - r3y,2)) - 2*pow(r1x,2)*r2y*r3y +
+                                                  2*r1x*r2x*r2y*r3y + 2*r1x*r2y*r3x*r3y - 2*r2x*r2y*r3x*r3y + pow(r1x,2)*pow(r3y,2) -
+                                                  2*r1x*r2x*pow(r3y,2) + pow(r2x,2)*pow(r3y,2) + pow(r2z,2)*pow(r3y,2) -
+                                                  2*r1z*r2z*((r1x - r3x)*(r2x - r3x) - r2y*r3y + pow(r3y,2)) +
+                                                  pow(r1y,2)*(pow(r2x - r3x,2) + pow(r2z - r3z,2)) -
+                                                  2*r2z*(pow(r1x,2) + r2x*r3x - r1x*(r2x + r3x) + r2y*r3y)*r3z +
+                                                  2*r1z*((r1x - r2x)*(r2x - r3x) + r2y*(-r2y + r3y))*r3z +
+                                                  (pow(r1x - r2x,2) + pow(r2y,2))*pow(r3z,2) -
+                                                  2*r1y*(-(r2x*r2y*r3x) + r2y*pow(r3x,2) + r1x*(r2x - r3x)*(r2y - r3y) + pow(r2x,2)*r3y +
+                                                         pow(r2z,2)*r3y - r2x*r3x*r3y + r1z*(r2y - r3y)*(r2z - r3z) - r2z*(r2y + r3y)*r3z +
+                                                         r2y*pow(r3z,2))))/
+                                                (pow(pow(r1x - r2x,2) + pow(r1y - r2y,2) + pow(r1z - r2z,2),2)*
+                                                 pow(pow(r2x - r3x,2) + pow(r2y - r3y,2) + pow(r2z - r3z,2),2)));
 //    std::cout<<"COMPTON "<<i <<" "<< j << " " << k <<" energia  out "<< Egeo<<" Energia in "<<E1<<std::endl; 
-    return exp(-SQ(E2-Egeo)/E2);
+    return exp(-SQ(E2-Egeo)/SQ(err2));
 }
 
 double Process::ComputeComptonFactor(const int & i, const int & j, const double & E1,  const double & E2){
     double cosang=ComputeScatteringCosAngle(i, j);
     double Egeo=E1/(1.0+E1/mec2*(1.0-cosang));//sistemare
 //    double err2=SQ(sigma_E)*SQ(Egeo/E1*(1+Egeo*(1-cosang)/mec2))+SQ(mec2*SQ(E2)/SQ(mec2+E2*(1-cosang)))*SQ(2*resolution)/(SQ(distancematr[i][j])+SQ(resolution));
-    double err2=16;
-    double answer=exp(-SQ(E2-Egeo)/E2);
+    double r1x=0;
+    double r1y=0;
+    double r1z=0;
+    double r2x=ev.GetInteractionPt(i).GetPosition().X();
+    double r2y=ev.GetInteractionPt(i).GetPosition().Y();
+    double r2z=ev.GetInteractionPt(i).GetPosition().Z();
+    double r3x=ev.GetInteractionPt(j).GetPosition().X();
+    double r3y=ev.GetInteractionPt(j).GetPosition().Y();
+    double r3z=ev.GetInteractionPt(j).GetPosition().Z();
+    double err2=511./pow(1 - cosang,2)*5*sqrt(0.6666666666666666)*sqrt(((pow(r1x,2) + pow(r1y,2) + pow(r1z,2) + pow(r2x,2) +
+                                                                         pow(r2y,2) - r1z*r2z + pow(r2z,2) - r2x*r3x + pow(r3x,2) - r1x*(r2x + r3x) - r2y*r3y +
+                                                                         pow(r3y,2) - r1y*(r2y + r3y) - (r1z + r2z)*r3z + pow(r3z,2))*
+                                                                        (pow(r1x,2)*pow(r2y,2) + pow(r1x,2)*pow(r2z,2) - 2*r1x*pow(r2y,2)*r3x -
+                                                                         2*r1x*pow(r2z,2)*r3x + pow(r2y,2)*pow(r3x,2) + pow(r2z,2)*pow(r3x,2) +
+                                                                         pow(r1z,2)*(pow(r2x - r3x,2) + pow(r2y - r3y,2)) - 2*pow(r1x,2)*r2y*r3y +
+                                                                         2*r1x*r2x*r2y*r3y + 2*r1x*r2y*r3x*r3y - 2*r2x*r2y*r3x*r3y + pow(r1x,2)*pow(r3y,2) -
+                                                                         2*r1x*r2x*pow(r3y,2) + pow(r2x,2)*pow(r3y,2) + pow(r2z,2)*pow(r3y,2) -
+                                                                         2*r1z*r2z*((r1x - r3x)*(r2x - r3x) - r2y*r3y + pow(r3y,2)) +
+                                                                         pow(r1y,2)*(pow(r2x - r3x,2) + pow(r2z - r3z,2)) -
+                                                                         2*r2z*(pow(r1x,2) + r2x*r3x - r1x*(r2x + r3x) + r2y*r3y)*r3z +
+                                                                         2*r1z*((r1x - r2x)*(r2x - r3x) + r2y*(-r2y + r3y))*r3z +
+                                                                         (pow(r1x - r2x,2) + pow(r2y,2))*pow(r3z,2) -
+                                                                         2*r1y*(-(r2x*r2y*r3x) + r2y*pow(r3x,2) + r1x*(r2x - r3x)*(r2y - r3y) + pow(r2x,2)*r3y +
+                                                                                pow(r2z,2)*r3y - r2x*r3x*r3y + r1z*(r2y - r3y)*(r2z - r3z) - r2z*(r2y + r3y)*r3z +
+                                                                                r2y*pow(r3z,2))))/
+                                                                       (pow(pow(r1x - r2x,2) + pow(r1y - r2y,2) + pow(r1z - r2z,2),2)*
+                                                                        pow(pow(r2x - r3x,2) + pow(r2y - r3y,2) + pow(r2z - r3z,2),2)));
+    double answer=exp(-SQ(E2-Egeo)/SQ(err2));
 //    std::cout<<"COMPTON "<< i << " " << j << " energia  out "<< Egeo<<" Energia in "<<E1<<std::endl; 
     return answer; //tialiere questo step
 }
@@ -248,63 +302,58 @@ double Process::ComputeTotalFactor(const std::vector <int> & interactionorder, s
 	double sigma=-1;
 	unsigned int i=1;
 
-#undef SETNR
 
 	if (1){
-		// std::cout << "sz int "<<interactionorder.size()<< " sz mf "<<meritfactors.size()<<"\n";
-		std::cout<<"Ordine interazione"<<std::endl;
+//		 std::cout << "sz int "<<interactionorder.size()<< " sz mf "<<meritfactors.size()<<"\n";
+//		std::cout<<"Ordine interazione"<<std::endl;
 		for (int ss=0;ss<interactionorder.size(); ss++){
-			std::cout<<"   "<<interactionorder[ss]<<" ";
+	//		std::cout<<"   "<<interactionorder[ss]<<" ";
 		}
-		std::cout<<std::endl;
+//		std::cout<<std::endl;
 	}
 
 	if (size==1){//maybe not needed, if loop closes right IT IS A MESS::::::CHECK EVERTHING IN THIS METHOD
 		sigma=photosigma[interactionorder[0]];
 		meritfactors[0].nr=-1;
 		return NrhA*sigma*exp(-NrhA*sigma*gedistancematr[interactionorder[0]][interactionorder[0]]);
-		//         return 1;
+		
+        
+        return 1;
 	}else{
 		while (meritfactors[i].nr==interactionorder[i]){
 			if(i!=1) {
 				E1=E2;
 				E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
 			}
-			std::cout<<"ENERGIE LOOP!!!  i="<<i<<" "<< E1<<"  " <<E2<<std::endl<<std::endl;
+//			std::cout<<"ENERGIE LOOP!!!  i="<<i<<" "<< E1<<"  " <<E2<<std::endl<<std::endl;
 			i++;
 		}
 		for(; i<size; i++){
 			if (i==1){
 				sigma=ComputeNishinaSigmaTotal(E1);
-				ptmp=/*NrhA*/exp(-sigma*NrhA*gedistancematr[interactionorder[i-1]][interactionorder[i-1]]);
+				ptmp=NrhA*exp(-sigma*NrhA*gedistancematr[interactionorder[i-1]][interactionorder[i-1]]);
 				ptmp*=ComputeNishinaSigma(interactionorder[i-1], interactionorder[i], E1, E2);
 				ptmp=ComputeComptonFactor(interactionorder[i-1], interactionorder[i], E1, E2);
-				std::cout<<"ENERGIE!!!  i="<<i<<" "<< E1<<"  " <<E2<<std::endl<<std::endl;
+//				std::cout<<"ENERGIE!!!  i="<<i<<" "<< E1<<"  " <<E2<<std::endl<<std::endl;
 				meritfactors[i-1].factor=ptmp;
-#ifdef SETNR
 				meritfactors[i-1].nr=interactionorder[i-1];
-#endif
 			}else{
 				E1=E2;
 				E2=E1-ev.GetInteractionPt(interactionorder[i-1]).GetEnergy();
 				ptmp=meritfactors[i-2].factor;
 				sigma=ComputeNishinaSigmaTotal(E1);
 
-				std::cout<<"ENERGIE!!!  i="<<i<<" "<< E1<<"  " <<E2<<std::endl<<std::endl;
+//				std::cout<<"ENERGIE!!!  i="<<i<<" "<< E1<<"  " <<E2<<std::endl<<std::endl;
 				ptmp*=ComputeComptonFactor(interactionorder[i-2], interactionorder[i-1], interactionorder[i], E1, E2);
 				ptmp*=ComputeNishinaSigma(interactionorder[i-2], interactionorder[i-1], interactionorder[i], E1, E2);
-				ptmp*=/*NrhA*/exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
+				ptmp*=NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
 				meritfactors[i-1].factor=ptmp;
-#ifdef SETNR
 				meritfactors[i-1].nr=interactionorder[i-1];
-#endif
 			}
 		}
-		//        sigma=photosigma[interactionorder[i-1]];
+        sigma=photosigma[interactionorder[i-1]];
 		meritfactors[i-1].factor=meritfactors[i-2].factor*sigma*NrhA*exp(-NrhA*sigma*gedistancematr[interactionorder[i-2]][interactionorder[i-1]]);
-#ifdef SETNR
 		meritfactors[i-1].nr=interactionorder[i-1];
-#endif
 		return meritfactors[i-1].factor;
 	}
 }
@@ -350,10 +399,12 @@ finalevent Process::ComputeDoubleProbability(){
                     final.order1=part1;
                     final.order2=part2;
                 }
+
             }while (std::next_permutation(part2.begin(), part2.end()));
+        
         }while (std::next_permutation(part1.begin(), part1.end()));
     }
-//    final.factor=pow(final.factor, 1.0/(ev.NumberofInteractionPts()-1));
+    final.factor=pow(final.factor, 1.0/(ev.NumberofInteractionPts()-1));
     return final;
 }
 
@@ -385,7 +436,7 @@ finalevent Process::ComputeSingleProbability(){
             final.order1=interactionorder;
         }
     }while (std::next_permutation(interactionorder.begin(), interactionorder.end()));
-//    final.factor=pow(final.factor, 1.0/(ev.NumberofInteractionPts()-1));//added to try
+    final.factor=pow(final.factor, 1.0/(ev.NumberofInteractionPts()-1));//added to try
     return final;
 }
 
@@ -393,6 +444,7 @@ finalevent Process::ComputeSingleProbability(){
 //Evaluation of the event/////////////////////////////////////////////////////////////////////////////////////
 void Process::EvaluateEvent(std::ostream & out, int & number_of_single, int & number_of_double){
 	double good1, good2;
+    if (ev.NumberofInteractionPts()<7){
 	std::cout <<"Computing single probability" <<std::endl;
 	finalevent psingle=ComputeSingleProbability();
 	std::cout<<psingle.factor<<"\n";
@@ -407,16 +459,15 @@ void Process::EvaluateEvent(std::ostream & out, int & number_of_single, int & nu
 			std::cout<<"This event has more than 0.10 difference!!!!\n";
 		}
 		//		double factor= (pdouble.factor-psingle.factor)/psingle.factor;
-		if (pdouble.factor>psingle.factor ||psingle.factor>1){
-			if ( pdouble.factor<=1 && pdouble.factor>0.000001&&ev.NumberofInteractionPts()>3){
+		if (pdouble.factor>psingle.factor ){
+			if (  pdouble.factor/psingle.factor>1E3 ){
 				number_of_double++;
 				std::cout<<"I chose double, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 				
 			}
 		}
-		if (psingle.factor>pdouble.factor ||pdouble.factor>1){
-			if ( psingle.factor<=1 && psingle.factor>0.000001){
-
+		if (psingle.factor>pdouble.factor ){
+			if ( psingle.factor/pdouble.factor>1E1){
 				std::cout<<"I chose single, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 				number_of_single++;
 			}
@@ -424,6 +475,7 @@ void Process::EvaluateEvent(std::ostream & out, int & number_of_single, int & nu
 	}
 	std::cout<<"NUMBER OF SINGLE : "<<number_of_single<<"\n";
 	std::cout<<"NUMBER OF DOUBLE : "<<number_of_double<<" \n\n\n\n\n\n\n\n\n";
+    }
 }
 
 void Process::Print(std::ostream & out, const int & a, const int & b){
@@ -431,3 +483,6 @@ void Process::Print(std::ostream & out, const int & a, const int & b){
     out <<ev.GetInteractionPt(a)<<std::endl;
     out <<ev.GetInteractionPt(b)<<std::endl;
 }
+
+
+

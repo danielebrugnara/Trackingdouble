@@ -2,7 +2,7 @@
 # a simple script for lazy people to compile ad run
 FILESIN="
 GammaEvents.0001_single
-GammaEvents.0002_double
+#GammaEvents.0002_double
 "
 
 
@@ -14,7 +14,7 @@ clear
 for f in $FILESIN
 do
 	echo "Launching program, file $f"
-	./my_prog ./Events/$f ./Tracked/$f 
+	./my_prog 1 ./Events/$f
 done
 
 echo "Finished Tracking tracked files in /Tracked/$f"

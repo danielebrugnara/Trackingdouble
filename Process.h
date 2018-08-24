@@ -11,6 +11,7 @@
 #include "Event.h"
 #include "Vector.h"
 
+//Timer to beanchmark the code/////////////////////////////////////////////////////////////////////////////////////
 
 
 struct finalevent{
@@ -75,6 +76,8 @@ private:
     std::vector<double> photosigma;
     std::vector<double> totalfactors;
 };
+
+
 
 
 
