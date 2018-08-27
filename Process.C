@@ -395,6 +395,8 @@ finalevent Process::ComputeDoubleProbability(){
                 ptmp=p1*p2;
                 if (ptmp>ptotal || ptotal==0){
                     ptotal=ptmp;
+                    final.energy1=etot1;
+                    final.energy2=etot2;
                     final.factor=ptotal;
                     final.order1=part1;
                     final.order2=part2;
@@ -431,7 +433,7 @@ finalevent Process::ComputeSingleProbability(){
         p=ComputeTotalFactor(interactionorder, meritfactors, etot);
         if (p>pfinal){
             pfinal=p;
-            
+            final.energy1=etot;
             final.factor=pfinal;
             final.order1=interactionorder;
         }
@@ -461,16 +463,19 @@ void Process::EvaluateEvent(std::ostream & out, int & number_of_single, int & nu
 		//		double factor= (pdouble.factor-psingle.factor)/psingle.factor;
 
 		if (pdouble.factor>psingle.factor ){
-			if (  pdouble.factor/psingle.factor>1E8 &&pdouble.factor>1E-5 && ev.NumberofInteractionPts()<4){
+			if (  pdouble.factor/psingle.factor>1E4 &&pdouble.factor>1E-5 /*&& ev.NumberofInteractionPts()<4*/){
 				number_of_double++;
-                Print(out, pdouble.order1[0], pdouble.order2[0]);
+                std::cout<<pdouble.energy1<<std::endl;
+                std::cout<<pdouble.energy2<<std::endl;
+//                Print(out, pdouble.order1[0], pdouble.order2[0]);
 
 //				std::cout<<"I chose double, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 			}
 		}
 		if (psingle.factor>pdouble.factor ){
-			if ( psingle.factor/pdouble.factor>1E1){
-                Print(out, psingle.order1[0], pdouble.order2[0]);
+			if ( psingle.factor/pdouble.factor>1E4){
+                std::cout<<psingle.energy1<<std::endl;
+ //               Print(out, psingle.order1[0], pdouble.order2[0]);
 //				std::cout<<"I chose single, number of int points= "<<ev.NumberofInteractionPts()<<"\n\n\n";
 				number_of_single++;
 			}

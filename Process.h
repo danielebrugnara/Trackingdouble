@@ -18,6 +18,8 @@ struct finalevent{
     std::vector<int> order1;
     std::vector<int> order2;
     double factor;
+    double energy1;
+    double energy2;
 };
 
 class Process{
